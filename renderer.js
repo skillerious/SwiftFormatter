@@ -27,11 +27,26 @@ const btnMin     = $("#btn-min");
 const btnMax     = $("#btn-max");
 const btnClose   = $("#btn-close");
 
-/* Misc */
+/* Update modal */
+const updateCheckBtn = $("#updateCheckNow");
+const updateGetBtn = $("#updateGetBtn");
+const updateGetLabel = $("#updateGetLabel");
+const updateOpenReleaseBtn = $("#updateOpenRelease");
+const badgeCurrent = $("#badgeCurrent");
+const badgeLatest  = $("#badgeLatest");
+const updateStatus = $("#updateStatusText");
+const updateSpinner= $("#updateSpinner");
+const updateNotes  = $("#updateChangelog");
+const updateFooter = $("#updateFooterNote");
+
+/* Settings */
+const settingsForm = $("#settingsForm");
+const setGhToken   = $("#setGhToken");
+
 const docsLinkBtn = $("#docsLink");
 const formatForm  = $("#formatForm");
 
-/* ---------- Settings state (Windows FS only) ---------- */
+/* ---------- Settings state ---------- */
 const ALLOWED_FS = ["exFAT", "FAT32", "NTFS"];
 const DEFAULT_SETTINGS = {
   defaultFs: "exFAT",
@@ -43,7 +58,7 @@ const DEFAULT_SETTINGS = {
 let SETTINGS = loadSettings();
 applySettingsToUI();
 
-/* ---------- Version state (from version.json via IPC) ---------- */
+/* ---------- Version state ---------- */
 let APP_META = {
   name: "Swift Formatter PRO",
   version: "v—",
@@ -69,31 +84,20 @@ async function loadVersion() {
       tagPrefix: v.tagPrefix || "v"
     };
 
-    // ---- About modal fields ----
     const aboutVerEl = $("#aboutVersion");
     const aboutChEl  = $("#aboutChannel");
     const aboutRelEl = $("#aboutReleased");
-
     if (aboutVerEl) aboutVerEl.textContent = APP_META.version;
     if (aboutChEl)  aboutChEl.textContent  = APP_META.channel;
-    if (aboutRelEl) aboutRelEl.textContent = APP_META.releasedAt
-      ? formatDate(APP_META.releasedAt)
-      : "—";
+    if (aboutRelEl) aboutRelEl.textContent = APP_META.releasedAt ? formatDate(APP_META.releasedAt) : "—";
 
-    // ---- Update dialog badges (current) ----
-    const badgeCur = $("#badgeCurrent");
-    if (badgeCur) badgeCur.textContent = `Current: ${APP_META.version}`;
-  } catch {
-    // leave defaults
-  }
+    if (badgeCurrent) badgeCurrent.textContent = `Current: ${APP_META.version}`;
+  } catch {}
 }
-
 function formatDate(iso) {
-  try {
-    const d = new Date(iso);
-    if (isNaN(d)) return "—";
-    return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
-  } catch { return "—"; }
+  try { const d = new Date(iso); if (isNaN(d)) return "—";
+    return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"2-digit" }); }
+  catch { return "—"; }
 }
 
 /* ---------------- Titlebar Admin badge ---------------- */
@@ -119,11 +123,10 @@ btnMin?.addEventListener("click", () => api.minimize());
 btnMax?.addEventListener("click", () => api.maximize());
 btnClose?.addEventListener("click", () => api.close());
 
-/* ---------------- Bootstrap popover init ---------------- */
+/* ---------------- Popovers ---------------- */
 function initPopovers() {
   try {
     document.querySelectorAll('[data-bs-toggle="popover"]').forEach(el => {
-      // eslint-disable-next-line no-new
       new bootstrap.Popover(el, { container: 'body', sanitize: true });
     });
   } catch {}
@@ -132,9 +135,7 @@ function initPopovers() {
 /* ---------------- Links ---------------- */
 docsLinkBtn?.addEventListener("click", () => api.openExternal("https://en.wikipedia.org/wiki/Disk_formatting"));
 const aboutRepoBtn = document.getElementById("aboutRepo");
-aboutRepoBtn?.addEventListener("click", () => {
-  api.openExternal(`https://github.com/${APP_META.repo}`);
-});
+aboutRepoBtn?.addEventListener("click", () => api.openExternal(`https://github.com/${APP_META.repo}`));
 
 /* ---------------- Refresh & selection ---------------- */
 let drives = [];
@@ -152,16 +153,12 @@ clearSelectionBtn?.addEventListener("click", () => {
 /* ---------------- Live preview ---------------- */
 [fsTypeEl, labelEl, quickEl].forEach(el => el?.addEventListener("change", updatePreview));
 
-/* ---------------- Progress stream from main ---------------- */
-api.onFormatProgress((msg) => {
-  appendOutput(msg);
-  tryParsePercent(msg);
-});
+/* ---------------- Progress stream ---------------- */
+api.onFormatProgress((msg) => { appendOutput(msg); tryParsePercent(msg); });
 
 /* ---------------- Utils ---------------- */
 function loadSettings() {
-  try {
-    const raw = localStorage.getItem("ufp.settings");
+  try { const raw = localStorage.getItem("ufp.settings");
     const parsed = raw ? JSON.parse(raw) : {};
     const merged = { ...DEFAULT_SETTINGS, ...parsed };
     if (!ALLOWED_FS.includes(merged.defaultFs)) merged.defaultFs = "exFAT";
@@ -175,7 +172,6 @@ function applySettingsToUI() {
   if (quickEl)  quickEl.checked = !!SETTINGS.quickDefault;
   document.body.classList.toggle("no-glow", !SETTINGS.glowHover);
 
-  // Settings modal fields if present
   const setFS = document.getElementById("setDefaultFS");
   const setQ  = document.getElementById("setQuickDefault");
   const setRC = document.getElementById("setRequireConfirm");
@@ -189,8 +185,7 @@ function applySettingsToUI() {
 }
 function prettyBytes(n) {
   if (!n && n !== 0) return "—";
-  const units = ["B","KB","MB","GB","TB","PB"];
-  let i = 0, v = Number(n);
+  const units = ["B","KB","MB","GB","TB","PB"]; let i = 0, v = Number(n);
   while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
   return `${v.toFixed(1)} ${units[i]}`;
 }
@@ -221,12 +216,9 @@ function tryParsePercent(text) {
   const m = text.match(/(\d{1,3})\s*%/);
   if (m) setPercent(Number(m[1]));
 }
-function displayDevice(d) {
-  const mount = d.mountpoints?.[0];
-  return mount ? `${d.device} | ${mount}` : d.device;
-}
+function displayDevice(d) { const mount = d.mountpoints?.[0]; return mount ? `${d.device} | ${mount}` : d.device; }
 
-/* ---------------- Drive list rendering ---------------- */
+/* ---------------- Drives UI ---------------- */
 function renderDriveList(list) {
   const listEl = driveListEl; if (!listEl) return;
   listEl.innerHTML = "";
@@ -234,41 +226,20 @@ function renderDriveList(list) {
   if (driveCountBadge) driveCountBadge.textContent = String(removable.length);
 
   for (const d of removable) {
-    const item = document.createElement("div");
-    item.className = "drive-item";
+    const item = document.createElement("div"); item.className = "drive-item";
+    const radioWrap = document.createElement("div"); radioWrap.className = "drive-radio";
+    const r = document.createElement("input"); r.type = "radio"; r.name = "devRadio"; r.className = "form-check-input";
+    r.checked = selected && selected.device === d.device; radioWrap.appendChild(r);
 
-    const radioWrap = document.createElement("div");
-    radioWrap.className = "drive-radio";
-    const r = document.createElement("input");
-    r.type = "radio"; r.name = "devRadio"; r.className = "form-check-input";
-    r.checked = selected && selected.device === d.device;
-    radioWrap.appendChild(r);
+    const avatar = document.createElement("div"); avatar.className = "drive-avatar"; avatar.innerHTML = `<i class="bi bi-usb-drive"></i>`;
+    const main = document.createElement("div"); main.className = "drive-main";
+    const title = document.createElement("div"); title.className = "drive-title"; title.textContent = d.description || "Drive";
+    const sub = document.createElement("div"); sub.className = "drive-sub"; sub.textContent = d.device; main.append(title, sub);
 
-    const avatar = document.createElement("div");
-    avatar.className = "drive-avatar";
-    avatar.innerHTML = `<i class="bi bi-usb-drive"></i>`;
-
-    const main = document.createElement("div");
-    main.className = "drive-main";
-    const title = document.createElement("div");
-    title.className = "drive-title";
-    title.textContent = d.description || "Drive";
-    const sub = document.createElement("div");
-    sub.className = "drive-sub";
-    sub.textContent = d.device;
-    main.append(title, sub);
-
-    const meta = document.createElement("div");
-    meta.className = "drive-meta";
-    const sizePill = document.createElement("span");
-    sizePill.className = "pill size";
-    sizePill.textContent = prettyBytes(d.size);
-    const mountPill = document.createElement("span");
-    mountPill.className = "pill mount";
-    mountPill.innerHTML = `<i class="bi bi-hdd-stack"></i> ${mountLabel(d.mountpoints)}`;
-    const busPill = document.createElement("span");
-    busPill.className = "pill usb";
-    busPill.innerHTML = `<span class="dot"></span> ${d.busType || "USB"}`;
+    const meta = document.createElement("div"); meta.className = "drive-meta";
+    const sizePill = document.createElement("span"); sizePill.className = "pill size"; sizePill.textContent = prettyBytes(d.size);
+    const mountPill = document.createElement("span"); mountPill.className = "pill mount"; mountPill.innerHTML = `<i class="bi bi-hdd-stack"></i> ${mountLabel(d.mountpoints)}`;
+    const busPill = document.createElement("span"); busPill.className = "pill usb"; busPill.innerHTML = `<span class="dot"></span> ${d.busType || "USB"}`;
     meta.append(sizePill, mountPill, busPill);
 
     item.append(radioWrap, avatar, main, meta);
@@ -290,7 +261,6 @@ function renderDriveList(list) {
   }
 }
 
-/* ---------------- Data ---------------- */
 async function refreshDrives() {
   try {
     driveLoaderEl?.classList.remove("hidden");
@@ -331,7 +301,7 @@ async function updatePreview() {
   }
 }
 
-/* ---------------- Elevation flow (modal-based) ---------------- */
+/* ---------------- Elevation modal ---------------- */
 function showElevationDialog() {
   return new Promise((resolve) => {
     const modalEl = document.getElementById("elevateModal");
@@ -339,17 +309,10 @@ function showElevationDialog() {
     const cancelBtn  = document.getElementById("elevateCancelBtn");
     const spinner    = document.getElementById("elevateSpinner");
     const statusEl   = document.getElementById("elevateStatus");
+    if (!modalEl) return resolve(false);
 
-    // Safety checks
-    if (!modalEl || !confirmBtn || !cancelBtn || !spinner || !statusEl) {
-      // fallback: cancel immediately
-      return resolve(false);
-    }
-
-    // Reset state each time modal opens
     spinner.classList.add("d-none");
-    confirmBtn.disabled = false;
-    cancelBtn.disabled  = false;
+    confirmBtn.disabled = false; cancelBtn.disabled = false;
     statusEl.textContent = "Formatting requires admin rights.";
 
     const modal = new bootstrap.Modal(modalEl, { backdrop: "static", keyboard: false });
@@ -358,54 +321,39 @@ function showElevationDialog() {
       modalEl.removeEventListener("hidden.bs.modal", onHidden);
       confirmBtn.removeEventListener("click", onConfirm);
       cancelBtn.removeEventListener("click", onCancel);
-      resolve(false); // resolve as not elevated if simply closed
+      resolve(false);
     };
-
-    const onCancel = () => {
-      modal.hide();
-      // resolve handled by onHidden
-    };
-
+    const onCancel = () => { modal.hide(); };
     const onConfirm = async () => {
-      confirmBtn.disabled = true;
-      cancelBtn.disabled = true;
-      spinner.classList.remove("d-none");
+      confirmBtn.disabled = true; cancelBtn.disabled = true; spinner.classList.remove("d-none");
       statusEl.textContent = "Requesting elevation via UAC…";
-
       const ok = await api.relaunchElevated();
       if (!ok) {
         spinner.classList.add("d-none");
         statusEl.textContent = "Could not relaunch. Please run Swift Formatter as Administrator manually.";
-        confirmBtn.disabled = false;
-        cancelBtn.disabled  = false;
+        confirmBtn.disabled = false; cancelBtn.disabled = false;
         return;
       }
       statusEl.textContent = "Launching elevated instance… this window will close.";
-      // Let the new instance start; the current one will quit from main.js
       setTimeout(() => modal.hide(), 600);
     };
 
     modalEl.addEventListener("hidden.bs.modal", onHidden);
     confirmBtn.addEventListener("click", onConfirm);
     cancelBtn.addEventListener("click", onCancel);
-
     modal.show();
   });
 }
-
 async function ensureAdminOrPrompt() {
   const isAdmin = await api.isAdmin();
   if (isAdmin) return true;
   await showElevationDialog();
-  // We either relaunched (app will quit) or user cancelled.
   return false;
 }
 
-/* ---------------- Submit (real format) ---------------- */
+/* ---------------- Submit format ---------------- */
 formatForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
-
-  // Ensure elevation before doing anything
   const elevated = await ensureAdminOrPrompt();
   if (!elevated) return;
 
@@ -423,36 +371,25 @@ formatForm?.addEventListener("submit", async (e) => {
     }
   }
 
-  try {
-    await updatePreview();
-    appendOutput(`Command plan:\n  ${cmdPreviewEl.textContent}\n\n`);
-  } catch {}
-
+  try { await updatePreview(); appendOutput(`Command plan:\n  ${cmdPreviewEl.textContent}\n\n`); } catch {}
   appendOutput("⚠️ Executing real format...\n");
   setIndeterminate();
   try {
     const res = await api.formatDrive({
-      device: selected.device,
-      fsType: fsTypeEl.value,
-      label: labelEl.value.trim(),
-      quick: !!quickEl.checked,
-      simulate: false,
-      mountpoints: selected.mountpoints
+      device: selected.device, fsType: fsTypeEl.value, label: labelEl.value.trim(),
+      quick: !!quickEl.checked, simulate: false, mountpoints: selected.mountpoints
     });
     if (res && res.ok) { setPercent(100); appendOutput("\n✅ Format completed successfully.\n"); }
     else { appendOutput("\n❌ The formatter did not report success.\n"); }
-  } catch (err) {
-    appendOutput(`\n❌ Error: ${err.message}\n`);
-  }
+  } catch (err) { appendOutput(`\n❌ Error: ${err.message}\n`); }
 });
 
-/* ---------------- Settings modal handlers ---------------- */
+/* ---------------- Settings modal ---------------- */
 function openSettings() {
   applySettingsToUI();
   try { new bootstrap.Modal($("#settingsModal"), { backdrop: true, focus: true }).show(); } catch {}
 }
-const settingsForm = $("#settingsForm");
-settingsForm?.addEventListener("submit", (e) => {
+settingsForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   SETTINGS.defaultFs       = $("#setDefaultFS").value;
   SETTINGS.quickDefault    = !!$("#setQuickDefault").checked;
@@ -461,81 +398,95 @@ settingsForm?.addEventListener("submit", (e) => {
   SETTINGS.glowHover       = !!$("#setGlowHover").checked;
 
   if (!ALLOWED_FS.includes(SETTINGS.defaultFs)) SETTINGS.defaultFs = "exFAT";
-  saveSettings();
-  applySettingsToUI();
+  saveSettings(); applySettingsToUI();
+  fsTypeEl.value = SETTINGS.defaultFs; quickEl.checked = SETTINGS.quickDefault;
 
-  fsTypeEl.value = SETTINGS.defaultFs;
-  quickEl.checked = SETTINGS.quickDefault;
+  const token = (setGhToken?.value || "").trim();
+  if (token) {
+    const save = await api.saveGitHubToken(token);
+    if (!save?.ok) alert("Failed to store GitHub token: " + (save?.error || "Unknown error"));
+    setGhToken.value = "";
+  }
 
   const modalEl = $("#settingsModal");
   const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
   modal.hide();
 });
 
-/* ---------------- Update modal (layout stubs; uses APP_META) ---------------- */
+/* ---------------- Update modal ---------------- */
+let UPDATE_INFO = null;   // { asset:{url,name}, latest, current, ... }
+let DOWNLOADED_PATH = null;
+
 function openUpdate() {
   setUpdateUI({
-    current: APP_META.version,
-    latest: "v—",
-    status: "Not checked yet.",
-    checking: false,
-    changelog: "—",
-    canGet: false,
-    footer: "You’re on the latest version."
+    current: APP_META.version, latest: "v—", status: "Not checked yet.", checking: false,
+    changelog: "—", canGet: false, footer: "You’re on the latest version."
   });
-  try { new bootstrap.Modal($("#updateModal"), { backdrop: true, focus: true }).show(); } catch {}
+  new bootstrap.Modal($("#updateModal"), { backdrop: true, focus: true }).show();
 }
-
-const updateCheckBtn = $("#updateCheckNow");
-const updateOpenReleaseBtn = $("#updateOpenRelease");
-const updateGetBtn = $("#updateGetBtn");
-
-updateCheckBtn?.addEventListener("click", () => {
-  // Visual demo only; later: compare against GitHub releases.
-  setUpdateUI({ checking: true, status: "Checking releases…" });
-  setTimeout(() => {
-    setUpdateUI({
-      current: APP_META.version,
-      latest: "v1.1.0",
-      checking: false,
-      status: "Update available.",
-      changelog:
-`# v1.1.0
-- New: Settings dialog and glow toggle
-- UI: Refined Windows-only format options
-- Fix: Stability improvements in drive detection
-`,
-      canGet: true,
-      footer: "New version available: v1.1.0",
-    });
-  }, 900);
-});
-
 updateOpenReleaseBtn?.addEventListener("click", () => {
   api.openExternal(`https://github.com/${APP_META.repo}/releases`);
 });
-updateGetBtn?.addEventListener("click", () => { if (updateGetBtn) updateGetBtn.disabled = true; });
+updateCheckBtn?.addEventListener("click", async () => {
+  setUpdateUI({ checking: true, status: "Checking releases…" });
+  const r = await api.checkForUpdate();
+  if (!r?.ok) {
+    setUpdateUI({ checking:false, status: "Failed to check: " + (r?.error || "Unknown") });
+    return;
+  }
+  UPDATE_INFO = r;
+  if (badgeLatest)  badgeLatest.textContent = `Latest: ${r.latest}`;
+  if (badgeCurrent) badgeCurrent.textContent = `Current: ${r.current}`;
+  updateNotes.textContent = r.notes || "—";
+  updateFooter.textContent = r.upToDate ? "You’re on the latest version." : `New version available: ${r.latest}`;
+  setUpdateUI({ checking:false, status: r.upToDate ? "Already up to date." : "Update available.", canGet: !r.upToDate && !!r.asset });
+});
+api.onUpdateProgress((p) => {
+  if (!p) return;
+  if (typeof p.percent === "number") {
+    setUpdateUI({ status: `Downloading… ${p.percent}%` });
+  } else if (p.total) {
+    const pct = Math.round((p.received / p.total) * 100);
+    setUpdateUI({ status: `Downloading… ${pct}%` });
+  } else {
+    setUpdateUI({ status: `Downloading…` });
+  }
+});
+updateGetBtn?.addEventListener("click", async () => {
+  if (!UPDATE_INFO?.asset) return;
+  if (!DOWNLOADED_PATH && updateGetBtn.disabled) return;
+
+  // If not yet downloaded → download
+  if (!DOWNLOADED_PATH) {
+    setUpdateUI({ checking: true, status: "Starting download…" });
+    updateGetLabel.textContent = "Downloading…";
+    const res = await api.downloadUpdate({ url: UPDATE_INFO.asset.url, name: UPDATE_INFO.asset.name });
+    setUpdateUI({ checking: false });
+    if (!res?.ok) { setUpdateUI({ status: "Download failed: " + (res?.error || "Unknown") }); updateGetLabel.textContent = "Get update"; return; }
+    DOWNLOADED_PATH = res.file;
+    setUpdateUI({ status: "Download complete. Ready to install." });
+    updateGetLabel.textContent = "Install & Restart";
+    return;
+  }
+
+  // Already downloaded → install
+  setUpdateUI({ checking: true, status: "Launching installer…" });
+  const res2 = await api.installUpdate(DOWNLOADED_PATH);
+  if (!res2?.ok) { setUpdateUI({ checking:false, status: "Install failed: " + (res2?.error || "Unknown") }); }
+});
 
 function setUpdateUI({ current, latest, status, checking, changelog, canGet, footer }) {
-  const badgeCur = $("#badgeCurrent");
-  const badgeLat = $("#badgeLatest");
-  const statTxt  = $("#updateStatusText");
-  const spin     = $("#updateSpinner");
-  const notes    = $("#updateChangelog");
-  const getBtn   = $("#updateGetBtn");
-  const footNote = $("#updateFooterNote");
-
-  if (badgeCur && current) badgeCur.textContent = `Current: ${current}`;
-  if (badgeLat && latest)  badgeLat.textContent = `Latest: ${latest}`;
-  if (statTxt && status)   statTxt.textContent = status;
-  if (spin && typeof checking === "boolean") spin.classList.toggle("d-none", !checking);
-  if (notes && changelog)  notes.textContent = changelog;
-  if (getBtn && typeof canGet === "boolean") getBtn.disabled = !canGet;
-  if (footNote && footer)  footNote.textContent = footer;
+  if (badgeCurrent && current) badgeCurrent.textContent = `Current: ${current}`;
+  if (badgeLatest && latest)   badgeLatest.textContent  = `Latest: ${latest}`;
+  if (updateStatus && status)  updateStatus.textContent = status;
+  if (updateSpinner && typeof checking === "boolean") updateSpinner.classList.toggle("d-none", !checking);
+  if (updateNotes && changelog) updateNotes.textContent = changelog;
+  if (typeof canGet === "boolean") updateGetBtn.disabled = !canGet;
+  if (updateFooter && footer) updateFooter.textContent = footer;
 }
 
 /* ---------------- Init ---------------- */
 initPopovers();
-loadVersion();        // fills About & Update badges from version.json
-addAdminBadge();      // shows Admin/Standard badge in titlebar
+loadVersion();
+addAdminBadge();
 refreshDrives();

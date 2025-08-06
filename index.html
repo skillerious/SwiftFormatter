@@ -25,25 +25,19 @@
       --accent-2:#8a2be2;
       --title-fg:#eaf6ff;
       --titlebar-h:48px;
-      --left-col:540px;               /* fixed width left column */
-      --panel-head-h:56px;            /* unified heights */
+      --left-col:540px;
+      --panel-head-h:56px;
       --panel-foot-h:48px;
     }
 
-    /* --- Text-selection policy ---------------------------------------------- */
     html, body, .app-grid, .panel, .panel * {
       -webkit-user-select: none;
       -ms-user-select: none;
       user-select: none;
     }
-    #cmdPreview, #output, #label, #label * {
-      -webkit-user-select: text;
-      -ms-user-select: text;
-      user-select: text;
-    }
+    #cmdPreview, #output, #label, #label * { user-select: text; }
     #cmdPreview::selection, #output::selection, #label::selection {
-      background: rgba(0,229,255,.30);
-      color: #00121b;
+      background: rgba(0,229,255,.30); color: #00121b;
     }
 
     html,body{
@@ -53,11 +47,10 @@
         radial-gradient(900px 900px at 110% 10%,rgba(138,43,226,.10),transparent 50%),
         var(--bg);
       color:#cfe3f5;
-      overflow:hidden; /* no page scrolling */
+      overflow:hidden;
     }
     *::-webkit-scrollbar{width:0;height:0} *{scrollbar-width:none}
 
-    /* Titlebar */
     #titlebar{
       height:var(--titlebar-h);
       -webkit-app-region:drag;
@@ -77,20 +70,18 @@
     .help-icon{font-size:0.95rem;color:#bcd1e6;opacity:.9;cursor:help}
     .help-icon:hover{opacity:1}
 
-    /* Fixed two-column layout */
     .app-grid{
       height:calc(100vh - var(--titlebar-h));
       padding:16px;
       display:grid;
-      grid-template-columns: var(--left-col) 1fr; /* fixed left, fluid right */
+      grid-template-columns: var(--left-col) 1fr;
       grid-gap:16px;
       overflow:hidden;
     }
 
-    /* Panels */
     .panel{
       display:grid;
-      grid-template-rows: var(--panel-head-h) 1fr var(--panel-foot-h); /* head | content | foot */
+      grid-template-rows: var(--panel-head-h) 1fr var(--panel-foot-h);
       border:1px solid var(--glass-border);
       background:var(--card);
       border-radius:16px;
@@ -98,7 +89,7 @@
       min-height:0;
     }
     .panel-head,.panel-foot{
-      padding:0 12px; /* unified padding */
+      padding:0 12px;
       display:flex;align-items:center;justify-content:space-between;
       border-bottom:1px solid var(--glass-border);
     }
@@ -111,13 +102,12 @@
       padding:4px 10px;border-radius:999px;font-size:.78rem;cursor:help;
     }
 
-    /* Drive list (left) */
     .drive-container{position:relative; padding:10px 12px; overflow:hidden; min-height:0;}
     .drive-list{display:grid;grid-auto-rows:min-content;gap:10px;overflow:hidden}
     .drive-item{
       position:relative;
       display:grid;
-      grid-template-columns: 18px 40px 1fr auto; /* radio | avatar | main | meta */
+      grid-template-columns: 18px 40px 1fr auto;
       align-items:center;
       gap:10px;
       padding:10px;
@@ -125,45 +115,29 @@
       border-radius:14px;
       background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.12));
       transition: box-shadow .2s ease, border-color .2s ease, background .2s ease, filter .2s ease, opacity .2s ease;
-      cursor: pointer; /* IDC_HAND */
+      cursor: pointer;
     }
     .drive-item:hover{
       border-color: rgba(0,229,255,.35);
       box-shadow: 0 0 0 2px rgba(0,229,255,.22) inset;
       filter: brightness(1.03);
     }
-    .drive-item.selected{
-      border-color: rgba(0,229,255,.45);
-      box-shadow: 0 0 0 2px rgba(0,229,255,.18) inset;
-    }
+    .drive-item.selected{ border-color: rgba(0,229,255,.45); box-shadow: 0 0 0 2px rgba(0,229,255,.18) inset; }
     .drive-item::after{
-      content:"";
-      position:absolute; inset:-2px;
-      border-radius:16px;
-      pointer-events:none;
-      background:
-        radial-gradient(120% 120% at 10% 0%, rgba(0,229,255,.28), transparent 60%),
-        radial-gradient(120% 120% at 90% 100%, rgba(138,43,226,.25), transparent 60%);
-      filter: blur(14px);
-      opacity:0;
-      transition: opacity .25s ease;
+      content:""; position:absolute; inset:-2px; border-radius:16px; pointer-events:none;
+      background: radial-gradient(120% 120% at 10% 0%, rgba(0,229,255,.28), transparent 60%),
+                  radial-gradient(120% 120% at 90% 100%, rgba(138,43,226,.25), transparent 60%);
+      filter: blur(14px); opacity:0; transition: opacity .25s ease;
     }
     .drive-item:hover::after{ opacity:.9; animation: glowPulse 1.6s ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) {
-      .drive-item:hover::after{ animation:none; }
-    }
-    @keyframes glowPulse{
-      0%,100% { filter: blur(14px); opacity:.9; }
-      50%     { filter: blur(18px); opacity:.65; }
-    }
+    @media (prefers-reduced-motion: reduce) { .drive-item:hover::after{ animation:none; } }
+    @keyframes glowPulse{ 0%,100%{ filter: blur(14px); opacity:.9;} 50%{ filter: blur(18px); opacity:.65;} }
     .no-glow .drive-item:hover::after{ animation:none; opacity:0 !important; }
 
     .drive-radio{display:flex;align-items:center;justify-content:center}
-    .drive-avatar{
-      width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+    .drive-avatar{ width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
       border:1px solid var(--glass-border); font-size:1.1rem;
-      background:radial-gradient(circle at 30% 30%, rgba(0,229,255,.15), rgba(138,43,226,.12));
-    }
+      background:radial-gradient(circle at 30% 30%, rgba(0,229,255,.15), rgba(138,43,226,.12)); }
     .drive-main{min-width:0}
     .drive-title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .drive-sub{font-size:.78rem;color:#9fb0c7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -175,46 +149,25 @@
     .pill.size{background:rgba(255,255,255,.06)}
     .dot{width:6px;height:6px;border-radius:50%;background:#7bdcb5}
 
-    /* Loader overlay (centered spinner) */
     .loader{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;}
     .loader.hidden{display:none;}
     .spinner-xxl{width:3.5rem; height:3.5rem; border-width:.35rem;}
 
-    /* Right panel content stack */
-    .panel-content{
-      display:flex;
-      flex-direction:column;
-      min-height:0;            /* allow children to shrink */
-      overflow:hidden;         /* keep inside card */
-    }
+    .panel-content{ display:flex; flex-direction:column; min-height:0; overflow:hidden; }
     .form-grid{padding:10px 12px;display:grid;grid-auto-rows:min-content;gap:8px}
     .cmd-preview{display:flex;align-items:center;border:1px dashed rgba(255,255,255,.2);
       background:rgba(255,255,255,.03);padding:6px 8px;border-radius:10px;min-height:34px}
     .confirm-grid{display:grid;grid-template-columns:1fr auto;gap:8px}
     .btn.glow{box-shadow:0 0 16px rgba(0,229,255,.25)}
 
-    /* Status area fills the rest */
-    .status-wrap{
-      padding:10px 12px;
-      padding-top:0;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      min-height:0;
-      flex:1;                 /* take all leftover space under the form */
-    }
+    .status-wrap{ padding:10px 12px; padding-top:0; display:flex; flex-direction:column; gap:8px; min-height:0; flex:1; }
     .progress{height:10px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border)}
     .log{display:flex;flex-direction:column;gap:6px;min-height:0;flex:1}
     .terminal{
-      flex:1;                /* grow to footer */
-      min-height:0;
-      overflow:auto;
-      background:#0b1118;border:1px solid var(--glass-border);
-      border-radius:12px;padding:8px;font-family:ui-monospace,Menlo,Consolas,monospace;
-      font-size:.85rem;color:#e3f1ff
+      flex:1; min-height:0; overflow:auto; background:#0b1118;border:1px solid var(--glass-border);
+      border-radius:12px;padding:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;color:#e3f1ff
     }
 
-    /* Modal polish (About / Settings / Update) */
     .about-hero{
       display:flex; align-items:center; gap:.75rem;
       background:linear-gradient(90deg, rgba(0,229,255,.12), rgba(138,43,226,.12));
@@ -233,7 +186,6 @@
       border-radius:16px;
     }
 
-    /* Update modal layout */
     .update-hero{
       display:flex; align-items:center; justify-content:space-between; gap:.75rem;
       border:1px solid var(--glass-border);
@@ -288,7 +240,7 @@
   </header>
 
   <main class="app-grid">
-    <!-- LEFT (fixed width): Drives -->
+    <!-- LEFT -->
     <section class="panel">
       <div class="panel-head">
         <div class="d-flex align-items-center gap-2">
@@ -303,7 +255,7 @@
         <div id="driveLoader" class="loader hidden">
           <div class="spinner-border text-info spinner-xxl" role="status" aria-label="Loading"></div>
         </div>
-        <div class="drive-list" id="driveList"><!-- populated by renderer --></div>
+        <div class="drive-list" id="driveList"></div>
       </div>
 
       <div class="panel-foot small text-muted">
@@ -312,30 +264,27 @@
       </div>
     </section>
 
-    <!-- RIGHT: Options + Status -->
+    <!-- RIGHT -->
     <section class="panel">
       <div class="panel-head">
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-magic"></i>
           <span class="panel-title">Format Options</span>
         </div>
-
-        <!-- Destructive pill with Bootstrap popover -->
         <span id="destructive-pill"
-              class="chip-warning"
-              tabindex="0"
-              role="button"
-              data-bs-toggle="popover"
-              data-bs-trigger="focus hover"
-              data-bs-placement="left"
-              title="Destructive operation"
-              data-bs-html="true"
-              data-bs-content="<strong>Formatting will erase all data</strong> on the selected drive and create a new filesystem. Double-check the device and confirm the drive letter before proceeding.">
+          class="chip-warning"
+          tabindex="0"
+          role="button"
+          data-bs-toggle="popover"
+          data-bs-trigger="focus hover"
+          data-bs-placement="left"
+          title="Destructive operation"
+          data-bs-html="true"
+          data-bs-content="<strong>Formatting will erase all data</strong> on the selected drive and create a new filesystem. Double-check the device and confirm the drive letter before proceeding.">
           <i class="bi bi-exclamation-triangle me-1"></i>Destructive
         </span>
       </div>
 
-      <!-- Single flex container for form + status -->
       <div class="panel-content">
         <form id="formatForm" class="form-grid">
           <div class="row g-2">
@@ -369,26 +318,22 @@
 
           <div>
             <label class="form-label mb-1">Command Preview</label>
-            <div class="cmd-preview">
-              <i class="bi bi-terminal me-2"></i>
-              <code id="cmdPreview">—</code>
-            </div>
+            <div class="cmd-preview"><i class="bi bi-terminal me-2"></i><code id="cmdPreview">—</code></div>
           </div>
 
           <div class="confirm-grid">
             <div>
               <label class="form-label mb-1 d-flex align-items-center gap-2">
                 Type the drive letter to confirm
-                <!-- Confirmation help popover -->
                 <i class="bi bi-question-circle help-icon"
-                   tabindex="0"
-                   role="button"
-                   data-bs-toggle="popover"
-                   data-bs-trigger="focus hover"
-                   data-bs-placement="right"
-                   title="Why confirm?"
-                   data-bs-html="true"
-                   data-bs-content="Formatting is irreversible. Typing the exact target (e.g. <code>E:</code>) helps prevent accidents. It must match the selected device’s drive letter.">
+                  tabindex="0"
+                  role="button"
+                  data-bs-toggle="popover"
+                  data-bs-trigger="focus hover"
+                  data-bs-placement="right"
+                  title="Why confirm?"
+                  data-bs-html="true"
+                  data-bs-content="Formatting is irreversible. Typing the exact target (e.g. <code>E:</code>) helps prevent accidents. It must match the selected device’s drive letter.">
                 </i>
               </label>
               <input type="text" class="form-control form-control-sm" id="confirmText" placeholder="E:">
@@ -401,7 +346,6 @@
           </div>
         </form>
 
-        <!-- Status area grows to the footer -->
         <div class="status-wrap">
           <div class="d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
@@ -432,70 +376,65 @@
     </section>
   </main>
 
-<!-- About Modal -->
-<div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header border-0">
-        <h5 class="modal-title d-flex align-items-center gap-2" id="aboutTitle">
-          <span class="about-logo"></span>
-          Swift Formatter <span class="badge bg-info text-dark ms-1">PRO</span>
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body pt-0">
-        <!-- Hero -->
-        <div class="about-hero mb-3">
-          <i class="bi bi-usb-drive fs-4"></i>
-          <div class="small">
-            <div class="fw-semibold">A sleek Windows USB formatting utility</div>
-            <div class="text-muted">Electron • Bootstrap Dark • PowerShell</div>
-          </div>
+  <!-- About Modal -->
+  <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <h5 class="modal-title d-flex align-items-center gap-2" id="aboutTitle">
+            <span class="about-logo"></span>
+            Swift Formatter <span class="badge bg-info text-dark ms-1">PRO</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
-        <!-- Details -->
-        <div class="row g-3 small">
-          <div class="col-6">
-            <div class="text-muted">Build</div>
-            <div id="aboutVersion">v—</div>
+        <div class="modal-body pt-0">
+          <div class="about-hero mb-3">
+            <i class="bi bi-usb-drive fs-4"></i>
+            <div class="small">
+              <div class="fw-semibold">A sleek Windows USB formatting utility</div>
+              <div class="text-muted">Electron • Bootstrap Dark • PowerShell</div>
+            </div>
           </div>
-          <div class="col-6">
-            <div class="text-muted">License</div>
-            <div>MIT</div>
-          </div>
-          <div class="col-6">
-            <div class="text-muted">Channel</div>
-            <div id="aboutChannel">stable</div>
-          </div>
-          <div class="col-6">
-            <div class="text-muted">Released</div>
-            <div id="aboutReleased">—</div>
-          </div>
-          <div class="col-12">
-            <div class="text-muted">Safety</div>
-            <div>
-              Formatting is <strong>destructive</strong>. Confirm the correct drive letter (e.g. <code>E:</code>) before proceeding.
+
+          <div class="row g-3 small">
+            <div class="col-6">
+              <div class="text-muted">Build</div>
+              <div id="aboutVersion">v—</div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted">License</div>
+              <div>MIT</div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted">Channel</div>
+              <div id="aboutChannel">stable</div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted">Released</div>
+              <div id="aboutReleased">—</div>
+            </div>
+            <div class="col-12">
+              <div class="text-muted">Safety</div>
+              <div>Formatting is <strong>destructive</strong>. Confirm the correct drive letter (e.g. <code>E:</code>) before proceeding.</div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="modal-footer border-0 d-flex justify-content-between">
-        <div class="small text-muted">© 2025 You</div>
-        <div class="d-flex gap-2">
-          <button type="button" class="btn btn-outline-light btn-sm" id="aboutRepo">
-            <i class="bi bi-github me-1"></i>Source
-          </button>
-          <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">
-            <i class="bi bi-check2 me-1"></i>Close
-          </button>
+        <div class="modal-footer border-0 d-flex justify-content-between">
+          <div class="small text-muted">© 2025 You</div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-light btn-sm" id="aboutRepo">
+              <i class="bi bi-github me-1"></i>Source
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">
+              <i class="bi bi-check2 me-1"></i>Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-
 
   <!-- Settings Modal -->
   <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsTitle" aria-hidden="true">
@@ -542,6 +481,13 @@
                   <label class="form-check-label" for="setGlowHover">Enable glow animation on drive hover</label>
                 </div>
               </div>
+
+              <div class="col-12">
+                <hr class="text-secondary">
+                <label class="form-label mb-1">GitHub token (for update checks & downloads)</label>
+                <input type="password" class="form-control" id="setGhToken" placeholder="Paste token (optional)">
+                <div class="form-text">Stored encrypted in your AppData. Leave blank to keep current.</div>
+              </div>
             </div>
           </div>
           <div class="modal-footer border-0 d-flex justify-content-between">
@@ -553,7 +499,7 @@
     </div>
   </div>
 
-  <!-- Update Modal (layout only) -->
+  <!-- Update Modal -->
   <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -590,6 +536,9 @@
               <button type="button" class="btn btn-outline-light btn-sm" id="updateCheckNow">
                 <i class="bi bi-arrow-repeat me-1"></i>Check now
               </button>
+              <button type="button" class="btn btn-primary btn-sm" id="updateGetBtn" disabled>
+                <i class="bi bi-cloud-arrow-down me-1"></i><span id="updateGetLabel">Get update</span>
+              </button>
             </div>
           </div>
 
@@ -603,64 +552,58 @@
           <div class="small text-muted" id="updateFooterNote">You’re on the latest version.</div>
           <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-light btn-sm" id="updateOpenRelease"><i class="bi bi-box-arrow-up-right me-1"></i>Open release</button>
-            <button type="button" class="btn btn-primary btn-sm" id="updateGetBtn" disabled>
-              <i class="bi bi-cloud-arrow-down me-1"></i>Get update
-            </button>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
   <!-- Elevation / Admin Modal -->
-<div class="modal fade" id="elevateModal" tabindex="-1" aria-labelledby="elevateTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header border-0">
-        <h5 class="modal-title d-flex align-items-center gap-2" id="elevateTitle">
-          <i class="bi bi-shield-lock"></i> Administrator Required
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+  <div class="modal fade" id="elevateModal" tabindex="-1" aria-labelledby="elevateTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <h5 class="modal-title d-flex align-items-center gap-2" id="elevateTitle">
+            <i class="bi bi-shield-lock"></i> Administrator Required
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
 
-      <div class="modal-body pt-0">
-        <!-- Reuse hero styling for consistency -->
-        <div class="about-hero mb-3">
-          <i class="bi bi-exclamation-triangle fs-5"></i>
-          <div class="small">
-            <div class="fw-semibold">Formatting needs elevated permissions</div>
-            <div class="text-muted">Windows requires Administrator rights to format drives. Swift Formatter can relaunch itself with elevated privileges.</div>
+        <div class="modal-body pt-0">
+          <div class="about-hero mb-3">
+            <i class="bi bi-exclamation-triangle fs-5"></i>
+            <div class="small">
+              <div class="fw-semibold">Formatting needs elevated permissions</div>
+              <div class="text-muted">Windows requires Administrator rights to format drives. Swift Formatter can relaunch itself with elevated privileges.</div>
+            </div>
+          </div>
+
+          <div class="update-status mb-2">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-activity"></i>
+              <span class="small text-muted" id="elevateStatus">Formatting requires admin rights.</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <div id="elevateSpinner" class="spinner-border spinner-border-sm text-info d-none" role="status" aria-label="Loading"></div>
+            </div>
+          </div>
+
+          <div class="small text-muted">
+            Tip: You can also close this window and run Swift Formatter manually as Administrator (right-click → <em>Run as administrator</em>).
           </div>
         </div>
 
-        <div class="update-status mb-2">
-          <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-activity"></i>
-            <span class="small text-muted" id="elevateStatus">Formatting requires admin rights.</span>
-          </div>
-          <div class="d-flex align-items-center gap-2">
-            <div id="elevateSpinner" class="spinner-border spinner-border-sm text-info d-none" role="status" aria-label="Loading"></div>
-          </div>
+        <div class="modal-footer border-0 d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal" id="elevateCancelBtn">Cancel</button>
+          <button type="button" class="btn btn-primary btn-sm" id="elevateConfirmBtn">
+            <i class="bi bi-box-arrow-up-right me-1"></i> Relaunch as Admin
+          </button>
         </div>
-
-        <div class="small text-muted">
-          Tip: You can also close this window and run Swift Formatter manually as Administrator (right-click → <em>Run as administrator</em>).
-        </div>
-      </div>
-
-      <div class="modal-footer border-0 d-flex justify-content-between">
-        <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal" id="elevateCancelBtn">Cancel</button>
-        <button type="button" class="btn btn-primary btn-sm" id="elevateConfirmBtn">
-          <i class="bi bi-box-arrow-up-right me-1"></i> Relaunch as Admin
-        </button>
       </div>
     </div>
   </div>
-</div>
 
-
-  <!-- Bootstrap JS (for popovers & modals) -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="./renderer.js"></script>
 </body>

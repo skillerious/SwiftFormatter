@@ -1,0 +1,9 @@
+{
+  "name": "Swift Formatter PRO",
+  "version": "1.0.0",
+  "channel": "stable",
+  "build": 10000,
+  "releasedAt": "2025-08-06T00:00:00Z",
+  "repo": "skillerious/SwiftFormatter",
+  "tagPrefix": "v"
+}

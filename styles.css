@@ -1,0 +1,46 @@
+:root{
+  --bg:#0b0f14;
+  --card:rgba(20,26,33,.75);
+  --glass-border:rgba(255,255,255,.08);
+  --accent:#00e5ff;
+  --accent-2:#8a2be2;
+  --title-fg:#eaf6ff;
+  --titlebar-h:48px;
+}
+html,body{height:100%;background:radial-gradient(1200px 600px at 10% -20%,rgba(0,229,255,.12),transparent 60%),radial-gradient(900px 900px at 110% 10%,rgba(138,43,226,.10),transparent 50%),var(--bg);color:#cfe3f5;overflow:hidden}
+*::-webkit-scrollbar{width:0;height:0} *{scrollbar-width:none}
+
+/* Titlebar */
+#titlebar{height:var(--titlebar-h);-webkit-app-region:drag;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,.15));border-bottom:1px solid var(--glass-border);backdrop-filter:blur(8px)}
+#titlebar .window-controls{-webkit-app-region:no-drag;display:flex;gap:.35rem}
+#titlebar .btn-ghost{background:transparent;border:1px solid transparent}
+#titlebar .btn-ghost:hover{border-color:var(--glass-border);background:rgba(255,255,255,.04)}
+#titlebar .app-logo{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--accent),var(--accent-2));box-shadow:0 0 16px rgba(0,229,255,.6)}
+#titlebar .app-title{font-weight:700;letter-spacing:.3px;color:var(--title-fg)}
+.neon-badge{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#00121b}
+
+/* Layout */
+.app-grid{height:calc(100vh - var(--titlebar-h));padding:16px;display:grid;grid-template-columns:1fr 1fr;grid-gap:16px;overflow:hidden}
+.panel{display:grid;grid-template-rows:auto 1fr auto;border:1px solid var(--glass-border);background:var(--card);border-radius:16px;backdrop-filter:blur(10px);min-height:0}
+.panel-head,.panel-foot{padding:10px 12px;border-bottom:1px solid var(--glass-border)}
+.panel-foot{border-top:1px solid var(--glass-border);border-bottom:none}
+.panel-title{font-weight:600}
+.badge-chip{background:rgba(255,255,255,.06);border:1px solid var(--glass-border)}
+.chip-warning{display:inline-flex;align-items:center;gap:.25rem;border:1px solid rgba(255,193,7,.3);color:#f8de7e;background:rgba(255,193,7,.08);padding:2px 8px;border-radius:999px;font-size:.75rem}
+
+/* Device table */
+.device-table-wrapper{padding:10px 12px;overflow:hidden}
+.table-compact thead th{font-size:.78rem;color:#a6b4c8;border-color:var(--glass-border)}
+.table-compact tbody td{font-size:.85rem;border-color:var(--glass-border)}
+.table-compact tbody tr:hover{background:rgba(255,255,255,.03)}
+.radio-cell{display:flex;align-items:center;justify-content:center}
+.code-pill{background:rgba(255,255,255,.06);border:1px solid var(--glass-border);padding:2px 8px;border-radius:999px}
+
+/* Options / Status */
+.form-grid{padding:10px 12px;display:grid;grid-auto-rows:min-content;gap:8px}
+.cmd-preview{display:flex;align-items:center;border:1px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.03);padding:6px 8px;border-radius:10px;min-height:34px}
+.confirm-grid{display:grid;grid-template-columns:1fr auto;gap:8px}
+.btn.glow{box-shadow:0 0 16px rgba(0,229,255,.25)}
+.status-wrap{padding:10px 12px;padding-top:0}
+.progress{height:10px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border)}
+.terminal{height:120px;overflow:auto;background:#0b1118;border:1px solid var(--glass-border);border-radius:12px;padding:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;color:#e3f1ff}

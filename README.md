@@ -101,17 +101,6 @@ npm start
 
 ---
 
-## 🏗️ Build (Distributables)
-
-```bash
-# create NSIS installer and portable EXE in ./dist
-npm run dist
-```
-
-Place your app icon as **`build/logo.ico`** (recommended frames: 16, 24, 32, 48, 64, 128, 256).
-
----
-
 ## ⚙️ Configuration
 
 ### `version.json`

@@ -11,10 +11,14 @@ contextBridge.exposeInMainWorld("api", {
   openExternal: (url) => ipcRenderer.invoke("shell:openExternal", url),
 
   // drives & format
-  listDrives: () => ipcRenderer.invoke("drives:list"),
-  formatDrive: (payload) => ipcRenderer.invoke("format:execute", payload),
+  listDrives:   () => ipcRenderer.invoke("drives:list"),
+  formatDrive:  (payload) => ipcRenderer.invoke("format:execute", payload),
   onFormatProgress: (cb) => ipcRenderer.on("format:progress", (_e, msg) => cb?.(msg)),
 
   // version
-  getVersion: () => ipcRenderer.invoke("app:version/get")
+  getVersion: () => ipcRenderer.invoke("app:version/get"),
+
+  // elevation
+  isAdmin: () => ipcRenderer.invoke("app:isAdmin"),
+  relaunchElevated: () => ipcRenderer.invoke("app:relaunchElevated")
 });

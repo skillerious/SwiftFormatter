@@ -613,6 +613,53 @@
     </div>
   </div>
 
+  <!-- Elevation / Admin Modal -->
+<div class="modal fade" id="elevateModal" tabindex="-1" aria-labelledby="elevateTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title d-flex align-items-center gap-2" id="elevateTitle">
+          <i class="bi bi-shield-lock"></i> Administrator Required
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body pt-0">
+        <!-- Reuse hero styling for consistency -->
+        <div class="about-hero mb-3">
+          <i class="bi bi-exclamation-triangle fs-5"></i>
+          <div class="small">
+            <div class="fw-semibold">Formatting needs elevated permissions</div>
+            <div class="text-muted">Windows requires Administrator rights to format drives. Swift Formatter can relaunch itself with elevated privileges.</div>
+          </div>
+        </div>
+
+        <div class="update-status mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-activity"></i>
+            <span class="small text-muted" id="elevateStatus">Formatting requires admin rights.</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <div id="elevateSpinner" class="spinner-border spinner-border-sm text-info d-none" role="status" aria-label="Loading"></div>
+          </div>
+        </div>
+
+        <div class="small text-muted">
+          Tip: You can also close this window and run Swift Formatter manually as Administrator (right-click → <em>Run as administrator</em>).
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 d-flex justify-content-between">
+        <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal" id="elevateCancelBtn">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="elevateConfirmBtn">
+          <i class="bi bi-box-arrow-up-right me-1"></i> Relaunch as Admin
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
   <!-- Bootstrap JS (for popovers & modals) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="./renderer.js"></script>

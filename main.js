@@ -27,12 +27,14 @@ function createWindow() {
 
   mainWindow.loadFile("index.html");
 
+  // Start maximized
   mainWindow.once("ready-to-show", () => {
     if (mainWindow) {
       mainWindow.maximize();
       mainWindow.show();
     }
   });
+  // mainWindow.webContents.openDevTools({ mode: "detach" });
 }
 
 app.whenReady().then(() => {
@@ -46,7 +48,9 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-// ---------- Window controls ----------
+/* =============================================================================
+   Window controls
+   ========================================================================== */
 ipcMain.on("window:minimize", () => mainWindow?.minimize());
 ipcMain.on("window:maximize", () => {
   if (!mainWindow) return;
@@ -55,23 +59,23 @@ ipcMain.on("window:maximize", () => {
 });
 ipcMain.on("window:close", () => mainWindow?.close());
 
-// ---------- External link ----------
 ipcMain.handle("shell:openExternal", (_, url) => shell.openExternal(url));
 
-// ---------- Version (read version.json in project root) ----------
+/* =============================================================================
+   Version (read version.json in project root)
+   ========================================================================== */
 ipcMain.handle("app:version/get", async () => {
   try {
     const p = path.join(__dirname, "version.json");
     const raw = fs.readFileSync(p, "utf8");
     const j = JSON.parse(raw);
-    // minimal validation / defaults
     return {
       name: j.name || "Swift Formatter PRO",
       version: j.version || "0.0.0",
       channel: j.channel || "stable",
       build: Number(j.build) || 0,
       releasedAt: j.releasedAt || null,
-      repo: j.repo || null,
+      repo: j.repo || "skillerious/SwiftFormatter",
       tagPrefix: j.tagPrefix || "v"
     };
   } catch (e) {
@@ -81,7 +85,7 @@ ipcMain.handle("app:version/get", async () => {
       channel: "stable",
       build: 0,
       releasedAt: null,
-      repo: null,
+      repo: "skillerious/SwiftFormatter",
       tagPrefix: "v",
       error: e.message
     };
@@ -89,9 +93,45 @@ ipcMain.handle("app:version/get", async () => {
 });
 
 /* =============================================================================
+   Elevation helpers (Admin check + relaunch elevated)
+   ========================================================================== */
+ipcMain.handle("app:isAdmin", async () => {
+  try {
+    const { stdout } = await execAsync(
+      `powershell.exe -NoProfile -Command "[bool]([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)"`
+    );
+    return stdout.toString().trim().toLowerCase() === "true";
+  } catch {
+    return false;
+  }
+});
+
+ipcMain.handle("app:relaunchElevated", async () => {
+  try {
+    const exe = process.execPath;               // electron.exe (dev) or packaged .exe
+    const args = process.argv.slice(1);
+    const wd = process.cwd();
+
+    // Use PowerShell to re-run this exe with UAC prompt
+    const ps = `
+Start-Process -Verb RunAs -FilePath '${exe.replace(/'/g,"''")}' `
+      + `-ArgumentList @(${args.map(a => `'${a.replace(/'/g,"''")}'`).join(", ")}) `
+      + `-WorkingDirectory '${wd.replace(/'/g,"''")}'
+`.trim();
+
+    const encoded = Buffer.from(ps, "utf16le").toString("base64");
+    await execAsync(`powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${encoded}`);
+
+    setTimeout(() => { app.quit(); }, 120);
+    return true;
+  } catch {
+    return false;
+  }
+});
+
+/* =============================================================================
    DRIVE ENUMERATION — WINDOWS (PowerShell)
    ========================================================================== */
-
 ipcMain.handle("drives:list", async () => {
   try {
     return await listDrivesWin();
@@ -119,6 +159,7 @@ function Build-ItemFromDisk([Microsoft.Management.Infrastructure.CimInstance]$di
   }
 }
 
+# Strategy A: removable volumes mapped back to their disks
 $byDisk = @{}
 $remVols = Get-Volume | Where-Object { $_.DriveType -eq 'Removable' -or $_.DriveType -eq 'Removable Disk' }
 foreach ($v in $remVols) {
@@ -142,6 +183,7 @@ foreach ($kv in $byDisk.GetEnumerator()) {
   $items.Add( (Build-ItemFromDisk -disk $kv.Value.disk -letters $kv.Value.letters.ToArray()) )
 }
 
+# Strategy B: USB disks (even without letters)
 if ($items.Count -eq 0) {
   foreach ($d in (Get-Disk | Where-Object { $_.BusType -eq 'USB' })) {
     $letters = @()
@@ -192,6 +234,7 @@ ipcMain.handle("format:execute", async (_event, payload) => {
   const plan = buildFormatCommandWindows({ driveLetter, fsType, label, quick });
   if (simulate) return { simulated: true, plan };
 
+  // Check elevation
   const { stdout } = await execAsync(
     `powershell.exe -NoProfile -Command "[bool]([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)"`
   );
@@ -214,5 +257,8 @@ ipcMain.handle("format:execute", async (_event, payload) => {
   });
 });
 
+/* =============================================================================
+   Helpers
+   ========================================================================== */
 function tryJSON(s) { try { return JSON.parse(s); } catch { return null; } }
 function logProgress(msg) { mainWindow?.webContents.send("format:progress", msg); }

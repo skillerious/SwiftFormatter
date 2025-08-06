@@ -1,6 +1,7 @@
 /* global api, bootstrap */
 const $ = (sel) => document.querySelector(sel);
 
+/* --------- Elements --------- */
 const driveListEl     = $("#driveList");
 const driveLoaderEl   = $("#driveLoader");
 const driveCountBadge = $("#driveCount");
@@ -26,10 +27,11 @@ const btnMin     = $("#btn-min");
 const btnMax     = $("#btn-max");
 const btnClose   = $("#btn-close");
 
+/* Misc */
 const docsLinkBtn = $("#docsLink");
 const formatForm  = $("#formatForm");
 
-/* ---------- Settings state ---------- */
+/* ---------- Settings state (Windows FS only) ---------- */
 const ALLOWED_FS = ["exFAT", "FAT32", "NTFS"];
 const DEFAULT_SETTINGS = {
   defaultFs: "exFAT",
@@ -45,10 +47,11 @@ applySettingsToUI();
 let APP_META = {
   name: "Swift Formatter PRO",
   version: "v—",
+  rawVersion: "",
   channel: "stable",
   build: 0,
   releasedAt: null,
-  repo: null,
+  repo: "skillerious/SwiftFormatter",
   tagPrefix: "v"
 };
 
@@ -57,28 +60,60 @@ async function loadVersion() {
     const v = await api.getVersion();
     APP_META = {
       name: v.name || "Swift Formatter PRO",
-      version: (v.version ? `v${v.version}` : "v—"),
+      version: v.version ? `v${v.version}` : "v—",
+      rawVersion: v.version || "",
       channel: v.channel || "stable",
       build: v.build || 0,
       releasedAt: v.releasedAt || null,
-      repo: v.repo || null,
+      repo: v.repo || "skillerious/SwiftFormatter",
       tagPrefix: v.tagPrefix || "v"
     };
-    // Update About & Update badges/text
-    const aboutVerEl = document.getElementById("aboutVersion");
+
+    // ---- About modal fields ----
+    const aboutVerEl = $("#aboutVersion");
+    const aboutChEl  = $("#aboutChannel");
+    const aboutRelEl = $("#aboutReleased");
+
     if (aboutVerEl) aboutVerEl.textContent = APP_META.version;
-    const badgeCur = document.getElementById("badgeCurrent");
+    if (aboutChEl)  aboutChEl.textContent  = APP_META.channel;
+    if (aboutRelEl) aboutRelEl.textContent = APP_META.releasedAt
+      ? formatDate(APP_META.releasedAt)
+      : "—";
+
+    // ---- Update dialog badges (current) ----
+    const badgeCur = $("#badgeCurrent");
     if (badgeCur) badgeCur.textContent = `Current: ${APP_META.version}`;
-  } catch (e) {
+  } catch {
     // leave defaults
   }
+}
+
+function formatDate(iso) {
+  try {
+    const d = new Date(iso);
+    if (isNaN(d)) return "—";
+    return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
+  } catch { return "—"; }
+}
+
+/* ---------------- Titlebar Admin badge ---------------- */
+async function addAdminBadge() {
+  try {
+    const isAdmin = await api.isAdmin();
+    const titleEl = document.querySelector(".app-title");
+    if (!titleEl) return;
+    const badge = document.createElement("span");
+    badge.className = "badge ms-2 " + (isAdmin ? "bg-success" : "bg-secondary");
+    badge.textContent = isAdmin ? "Admin" : "Standard";
+    titleEl.appendChild(badge);
+  } catch {}
 }
 
 /* ---------------- Window controls ---------------- */
 btnUpdate?.addEventListener("click", openUpdate);
 btnSettings?.addEventListener("click", openSettings);
 btnAbout?.addEventListener("click", () => {
-  try { new bootstrap.Modal(document.getElementById("aboutModal"), { backdrop: true, focus: true }).show(); } catch {}
+  try { new bootstrap.Modal($("#aboutModal"), { backdrop: true, focus: true }).show(); } catch {}
 });
 btnMin?.addEventListener("click", () => api.minimize());
 btnMax?.addEventListener("click", () => api.maximize());
@@ -98,8 +133,7 @@ function initPopovers() {
 docsLinkBtn?.addEventListener("click", () => api.openExternal("https://en.wikipedia.org/wiki/Disk_formatting"));
 const aboutRepoBtn = document.getElementById("aboutRepo");
 aboutRepoBtn?.addEventListener("click", () => {
-  const repo = APP_META.repo ? `https://github.com/${APP_META.repo}` : "https://github.com/";
-  api.openExternal(repo);
+  api.openExternal(`https://github.com/${APP_META.repo}`);
 });
 
 /* ---------------- Refresh & selection ---------------- */
@@ -297,9 +331,84 @@ async function updatePreview() {
   }
 }
 
+/* ---------------- Elevation flow (modal-based) ---------------- */
+function showElevationDialog() {
+  return new Promise((resolve) => {
+    const modalEl = document.getElementById("elevateModal");
+    const confirmBtn = document.getElementById("elevateConfirmBtn");
+    const cancelBtn  = document.getElementById("elevateCancelBtn");
+    const spinner    = document.getElementById("elevateSpinner");
+    const statusEl   = document.getElementById("elevateStatus");
+
+    // Safety checks
+    if (!modalEl || !confirmBtn || !cancelBtn || !spinner || !statusEl) {
+      // fallback: cancel immediately
+      return resolve(false);
+    }
+
+    // Reset state each time modal opens
+    spinner.classList.add("d-none");
+    confirmBtn.disabled = false;
+    cancelBtn.disabled  = false;
+    statusEl.textContent = "Formatting requires admin rights.";
+
+    const modal = new bootstrap.Modal(modalEl, { backdrop: "static", keyboard: false });
+
+    const onHidden = () => {
+      modalEl.removeEventListener("hidden.bs.modal", onHidden);
+      confirmBtn.removeEventListener("click", onConfirm);
+      cancelBtn.removeEventListener("click", onCancel);
+      resolve(false); // resolve as not elevated if simply closed
+    };
+
+    const onCancel = () => {
+      modal.hide();
+      // resolve handled by onHidden
+    };
+
+    const onConfirm = async () => {
+      confirmBtn.disabled = true;
+      cancelBtn.disabled = true;
+      spinner.classList.remove("d-none");
+      statusEl.textContent = "Requesting elevation via UAC…";
+
+      const ok = await api.relaunchElevated();
+      if (!ok) {
+        spinner.classList.add("d-none");
+        statusEl.textContent = "Could not relaunch. Please run Swift Formatter as Administrator manually.";
+        confirmBtn.disabled = false;
+        cancelBtn.disabled  = false;
+        return;
+      }
+      statusEl.textContent = "Launching elevated instance… this window will close.";
+      // Let the new instance start; the current one will quit from main.js
+      setTimeout(() => modal.hide(), 600);
+    };
+
+    modalEl.addEventListener("hidden.bs.modal", onHidden);
+    confirmBtn.addEventListener("click", onConfirm);
+    cancelBtn.addEventListener("click", onCancel);
+
+    modal.show();
+  });
+}
+
+async function ensureAdminOrPrompt() {
+  const isAdmin = await api.isAdmin();
+  if (isAdmin) return true;
+  await showElevationDialog();
+  // We either relaunched (app will quit) or user cancelled.
+  return false;
+}
+
 /* ---------------- Submit (real format) ---------------- */
 formatForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  // Ensure elevation before doing anything
+  const elevated = await ensureAdminOrPrompt();
+  if (!elevated) return;
+
   if (outputEl) outputEl.textContent = "";
   resetProgress();
 
@@ -340,16 +449,16 @@ formatForm?.addEventListener("submit", async (e) => {
 /* ---------------- Settings modal handlers ---------------- */
 function openSettings() {
   applySettingsToUI();
-  try { new bootstrap.Modal(document.getElementById("settingsModal"), { backdrop: true, focus: true }).show(); } catch {}
+  try { new bootstrap.Modal($("#settingsModal"), { backdrop: true, focus: true }).show(); } catch {}
 }
-const settingsForm = document.getElementById("settingsForm");
+const settingsForm = $("#settingsForm");
 settingsForm?.addEventListener("submit", (e) => {
   e.preventDefault();
-  SETTINGS.defaultFs       = document.getElementById("setDefaultFS").value;
-  SETTINGS.quickDefault    = !!document.getElementById("setQuickDefault").checked;
-  SETTINGS.requireConfirm  = !!document.getElementById("setRequireConfirm").checked;
-  SETTINGS.autofillConfirm = !!document.getElementById("setAutofillConfirm").checked;
-  SETTINGS.glowHover       = !!document.getElementById("setGlowHover").checked;
+  SETTINGS.defaultFs       = $("#setDefaultFS").value;
+  SETTINGS.quickDefault    = !!$("#setQuickDefault").checked;
+  SETTINGS.requireConfirm  = !!$("#setRequireConfirm").checked;
+  SETTINGS.autofillConfirm = !!$("#setAutofillConfirm").checked;
+  SETTINGS.glowHover       = !!$("#setGlowHover").checked;
 
   if (!ALLOWED_FS.includes(SETTINGS.defaultFs)) SETTINGS.defaultFs = "exFAT";
   saveSettings();
@@ -358,12 +467,12 @@ settingsForm?.addEventListener("submit", (e) => {
   fsTypeEl.value = SETTINGS.defaultFs;
   quickEl.checked = SETTINGS.quickDefault;
 
-  const modalEl = document.getElementById("settingsModal");
+  const modalEl = $("#settingsModal");
   const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
   modal.hide();
 });
 
-/* ---------------- Update modal (layout stubs, use JSON version) ---------------- */
+/* ---------------- Update modal (layout stubs; uses APP_META) ---------------- */
 function openUpdate() {
   setUpdateUI({
     current: APP_META.version,
@@ -374,15 +483,15 @@ function openUpdate() {
     canGet: false,
     footer: "You’re on the latest version."
   });
-  try { new bootstrap.Modal(document.getElementById("updateModal"), { backdrop: true, focus: true }).show(); } catch {}
+  try { new bootstrap.Modal($("#updateModal"), { backdrop: true, focus: true }).show(); } catch {}
 }
 
-const updateCheckBtn = document.getElementById("updateCheckNow");
-const updateOpenReleaseBtn = document.getElementById("updateOpenRelease");
-const updateGetBtn = document.getElementById("updateGetBtn");
+const updateCheckBtn = $("#updateCheckNow");
+const updateOpenReleaseBtn = $("#updateOpenRelease");
+const updateGetBtn = $("#updateGetBtn");
 
 updateCheckBtn?.addEventListener("click", () => {
-  // Visual demo only. Later: compare version.json with GitHub release tag.
+  // Visual demo only; later: compare against GitHub releases.
   setUpdateUI({ checking: true, status: "Checking releases…" });
   setTimeout(() => {
     setUpdateUI({
@@ -403,19 +512,18 @@ updateCheckBtn?.addEventListener("click", () => {
 });
 
 updateOpenReleaseBtn?.addEventListener("click", () => {
-  const url = APP_META.repo ? `https://github.com/${APP_META.repo}/releases` : "https://github.com/";
-  api.openExternal(url);
+  api.openExternal(`https://github.com/${APP_META.repo}/releases`);
 });
 updateGetBtn?.addEventListener("click", () => { if (updateGetBtn) updateGetBtn.disabled = true; });
 
 function setUpdateUI({ current, latest, status, checking, changelog, canGet, footer }) {
-  const badgeCur = document.getElementById("badgeCurrent");
-  const badgeLat = document.getElementById("badgeLatest");
-  const statTxt  = document.getElementById("updateStatusText");
-  const spin     = document.getElementById("updateSpinner");
-  const notes    = document.getElementById("updateChangelog");
-  const getBtn   = document.getElementById("updateGetBtn");
-  const footNote = document.getElementById("updateFooterNote");
+  const badgeCur = $("#badgeCurrent");
+  const badgeLat = $("#badgeLatest");
+  const statTxt  = $("#updateStatusText");
+  const spin     = $("#updateSpinner");
+  const notes    = $("#updateChangelog");
+  const getBtn   = $("#updateGetBtn");
+  const footNote = $("#updateFooterNote");
 
   if (badgeCur && current) badgeCur.textContent = `Current: ${current}`;
   if (badgeLat && latest)  badgeLat.textContent = `Latest: ${latest}`;
@@ -428,5 +536,6 @@ function setUpdateUI({ current, latest, status, checking, changelog, canGet, foo
 
 /* ---------------- Init ---------------- */
 initPopovers();
-loadVersion();       // <-- get version from version.json
+loadVersion();        // fills About & Update badges from version.json
+addAdminBadge();      // shows Admin/Standard badge in titlebar
 refreshDrives();

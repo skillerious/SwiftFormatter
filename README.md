@@ -1,3 +1,4 @@
+
 <p align="center">
   <img src="https://i.imgur.com/H5T3CsP.png" alt="Swift Formatter PRO logo" width="128" height="128">
 </p>
@@ -5,192 +6,165 @@
 <h1 align="center">Swift Formatter <em>PRO</em></h1>
 
 <p align="center">
-  Sleek, Windows‑only USB formatting utility built with <strong>Electron</strong>, <strong>Bootswatch Darkly</strong>, and <strong>PowerShell</strong>.
+  Sleek, Windows‑only USB‑drive formatter powered by <strong>Electron 31</strong>, <strong>Bootswatch Darkly</strong> and native <strong>PowerShell</strong>.
 </p>
 
 <p align="center">
-  <a href="https://www.electronjs.org/"><img src="https://img.shields.io/badge/Electron-31.x-2ea44f?logo=electron&logoColor=white" alt="Electron"></a>
+  <a href="https://www.electronjs.org/"><img src="https://img.shields.io/badge/Electron-31.x-2ea44f?logo=electron&logoColor=white" alt="Electron 31"></a>
   <a href="#"><img src="https://img.shields.io/badge/Windows-Only-0078D6?logo=windows&logoColor=white" alt="Windows only"></a>
   <a href="https://bootswatch.com/darkly/"><img src="https://img.shields.io/badge/Bootswatch-Darkly-7952B3?logo=bootstrap&logoColor=white" alt="Bootswatch Darkly"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License"></a>
 </p>
 
 ---
 
 ## ✨ Overview
+**Swift Formatter PRO** is a modern USB‑drive formatter for Windows 10 / 11.  
+Custom title‑bar, dark‑mode UI, **Admin / Standard** badge, live PowerShell output and an in‑app updater — all wrapped in a single, portable EXE.
 
-**Swift Formatter PRO** is a fast, elegant USB drive formatter for Windows. It features a custom titlebar, a modern dark UI, **Admin/Standard badge**, rich status output, and a streamlined, safe workflow to format removable drives using native Windows tooling.
+<div align="center" style="background:#fff4ce;border:1px solid #ffe1a5;padding:14px 18px;border-radius:6px;margin:20px 0;line-height:1.4;">
+  <strong>🔔 NOTICE — GitHub token is temporary!</strong><br>
+  Adding a Personal‑Access‑Token (PAT) lifts GitHub’s anonymous 60 req/hr limit.<br>
+  A new delta‑update system that <em>does not</em> require a PAT is coming soon.
+</div>
 
-> ⚠️ **Formatting is destructive** — all data on the selected drive will be **erased**. Double‑check the target before confirming.
+---
+
+> **⚠️ Formatting is destructive** — all data on the selected drive will be erased.  
+> Always double‑check the target drive and type its letter to confirm (<code>E:</code> etc.).
 
 ---
 
 ## 🖼️ UI Preview
 
 <p align="center">
-  <img src="https://i.imgur.com/DasvJ8O.png" alt="Drive list panel" width="95%"><br>
-  <em>Polished drive list with glow hover and compact device chips.</em>
+  <img src="https://i.imgur.com/DasvJ8O.png" alt="Drive list panel" width="85%"><br>
+  <em>Polished drive list with glow‑hover effects and compact device chips.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/2ky5Gaq.png" alt="About" width="95%"><br>
-  <em>About dialog.</em>
+  <img src="https://i.imgur.com/2ky5Gaq.png" alt="About dialog" width="85%"><br>
+  <em>About dialog with build metadata and license.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/2ky5Gaq.png" alt="Update dialog" width="95%"><br>
-  <em>In‑app update dialog with release notes and download/install flow.</em>
+  <img src="https://i.imgur.com/2ky5Gaq.png" alt="Updater dialog" width="85%"><br>
+  <em>In‑app updater showing release notes and download progress.</em>
 </p>
 
 ---
 
-## 🚀 Features
-
-- **Windows‑native formatting** via `Format-Volume` (PowerShell).
-- **Automatic elevation** prompt (UAC) using COM ShellExecute, with an Admin/Standard badge in the titlebar.
-- **Beautiful dark theme** (Bootswatch Darkly) + custom titlebar.
-- **No scrolling** layout: all key controls visible at a glance.
-- **Drive safety**: requires typing the correct drive letter (e.g., `E:`) to confirm.
-- **Command preview** shows the exact PowerShell command before execution.
-- **Update dialog**: checks GitHub Releases, downloads the latest installer, and launches it.
-- **Optional GitHub token** stored **encrypted** (Windows DPAPI; CurrentUser).
-- **Windows‑only** code path — no Linux/macOS branches.
+## 🚀 Feature Highlights
+* **Native formatting** — wraps Windows <code>Format‑Volume</code> for speed & reliability  
+* **One‑click elevation** — relaunches with UAC; badge flips to <strong>Admin</strong>  
+* **Modern dark UI** — Bootswatch Darkly + subtle glow‑hover animation  
+* **Safety guard** — requires typing the drive letter before executing  
+* **Command preview** — shows the exact PowerShell command beforehand  
+* **In‑app updater** — checks GitHub Releases, downloads, installs, restarts  
+* **Encrypted PAT storage** — Windows DPAPI (CurrentUser)  
+* **100 % Windows code‑path** — no dead Linux/macOS branches
 
 ---
 
-## 📦 Project Structure
-
+## 📂 Project Structure
 ```
-SwiftFormatter/
-├─ index.html
-├─ main.js
-├─ preload.js
-├─ renderer.js
-├─ package.json
-├─ version.json
-├─ build/
-│  └─ logo.ico        (multi‑size icon used for EXE/installer/window)
-└─ dist/              (created after `npm run dist`)
+.
+├─ build/              # logo.ico (multi‑size icon)
+├─ index.html          # UI shell
+├─ main.js             # Electron main (PowerShell, elevation, updater)
+├─ preload.js          # secure bridge (contextIsolation)
+├─ renderer.js         # renderer‑process logic
+├─ styles.css          # extra tweaks
+├─ package.json        # scripts & builder config
+├─ package-lock.json
+├─ version.json        # app metadata
+└─ dist/               # created by `npm run dist`
 ```
 
 ---
 
 ## 🧰 Requirements
-
-- **Windows 10/11**
-- **Node.js 18+** (tested with Node 22)
-- **PowerShell** (built‑in)
-- **Git** (optional, for cloning)
+| Tool | Notes |
+|------|-------|
+| **Windows** | 10 (21H2) or 11 |
+| **Node.js** | ≥ 18 (tested on Node 22) |
+| **PowerShell** | Built‑in (5.x / 7.x) |
+| **Git** | optional (for cloning) |
 
 ---
 
-## 🛠️ Getting Started (Dev)
-
+## 🛠️ Quick Start
 ```bash
 git clone https://github.com/skillerious/SwiftFormatter.git
 cd SwiftFormatter
 
-# install deps
-npm install
-
-# run in dev
-npm start
+npm install      # install dependencies
+npm start        # dev run (auto‑reload)
 ```
-
-> The app starts **maximized**, and the titlebar shows an **Admin** or **Standard** badge. Formatting requires elevation; the app can relaunch itself with UAC.
+Dev‑mode starts maximised and displays **Standard** or **Admin** in the title‑bar.
 
 ---
 
 ## ⚙️ Configuration
 
 ### `version.json`
-The app reads its version and metadata from a JSON file included in the build:
-
 ```json
 {
   "name": "Swift Formatter PRO",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "channel": "stable",
-  "build": 1,
-  "releasedAt": "2025-08-06T00:00:00Z",
+  "build": 6,
+  "releasedAt": "2025-08-07T00:00:00Z",
   "repo": "skillerious/SwiftFormatter",
   "tagPrefix": "v"
 }
 ```
 
-### App Settings
-Open **Settings** from the titlebar to tweak:
+### In‑app Settings
+| Setting | Purpose | Default |
+|---------|---------|:------:|
+| **Filesystem** | exFAT / FAT32 / NTFS | exFAT |
+| **Quick format** | Skip surface scan | ✅ |
+| **Require confirmation** | Must type drive letter | ✅ |
+| **Autofill confirm** | Pre‑fill drive letter | ⬜ |
+| **Glow hover** | Pretty glow on tiles | ✅ |
 
-- Default filesystem: `exFAT`, `FAT32`, or `NTFS`
-- Quick format (on/off)
-- Require & autofill typing confirmation
-- Drive hover glow
-- **GitHub token** (optional; see below)
-
-Settings persist locally via `localStorage` and the GitHub token is stored encrypted.
-
----
-
-## 🔐 Security & Privacy
-
-- **Elevation**: When needed, the app relaunches itself elevated via `ShellExecute(..., 'runas')`. Non‑elevated instances never attempt to format.
-- **Update token**: If you provide a GitHub token (useful for higher API rate limits or private releases), it is encrypted with Windows **DPAPI (CurrentUser)** and saved at:
-
-```
-%APPDATA%\SwiftFormatter\secrets.json
-```
-
-The token is only used for GitHub API calls and asset downloads. Public releases **do not require** a token.
+Settings persist via `localStorage`; clearing site‑data resets them.
 
 ---
 
-## 🔄 Updates
-
-1. Click the **Update** button in the titlebar.
-2. **Check now** queries `https://api.github.com/repos/<owner>/<repo>/releases/latest`.
-3. If a newer version exists, click **Get update** to download the `.exe` asset.
-4. When finished, click **Install & Restart** — the installer launches and Swift Formatter closes.
-
-> The updater doesn’t auto‑publish; you can upload releases manually to GitHub. Tags like `v1.2.3` are recommended.
+## 🔄 Update Flow
+1. Click **Update** → **Check now**  
+2. If a new release exists → **Get update** (downloads `.exe`)  
+3. **Install & Restart** launches installer, Swift Formatter closes  
 
 ---
 
-## 🧪 How Formatting Works (Windows)
-
-- The UI constructs and previews a command like:
-
+## 🧪 How Formatting Works
+The app builds & previews:
 ```powershell
-Format-Volume -DriveLetter E -FileSystem exFAT -NewFileSystemLabel 'USB' -Confirm:$false -Force -Full:$false
+Format-Volume -DriveLetter E `
+              -FileSystem exFAT `
+              -NewFileSystemLabel 'USB' `
+              -Confirm:$false -Force -Full:$false
 ```
-
-- **Quick format** sets `-Full:$false` (full format if unchecked).
-- **Confirmation** requires typing the selected drive letter (e.g., `E:`).
-- Live output and progress are streamed to the app terminal.
+Live PowerShell output streams to the in‑app terminal.
 
 ---
 
 ## 🧯 Troubleshooting
-
-**“Administrator privileges are required…”**  
-Run the app elevated (the app can relaunch itself; accept the UAC prompt).
-
-**Build error: icon missing**  
-Add `build/logo.ico` (multi‑size ICO).
-
-**Build error: repository/channel**  
-Ensure `package.json` includes a `repository` block and no publish providers if you distribute manually.
-
-**Rate limit when checking updates**  
-Public releases don’t need a token, but adding your GitHub token increases reliability (5,000 req/hour).
+| Problem | Remedy |
+|---------|--------|
+| **Needs Admin** | Accept UAC or run app as Administrator |
+| **`npm run dist` fails** | Close all SwiftFormatter / Electron processes |
+| **GitHub rate‑limit** | Add PAT in **Settings → GitHub token** or wait an hour |
 
 ---
 
 ## 🤝 Contributing
-
-PRs and issues are welcome! Please open an issue for feature requests or bug reports.
+Bug reports & PRs welcome — open an issue for ideas or improvements.
 
 ---
 
 ## 📄 License
-
-MIT © Robin Doak
+MIT © 2025 Robin Doak

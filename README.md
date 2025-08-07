@@ -28,17 +28,17 @@
 ## 🖼️ UI Preview
 
 <p align="center">
-  <img src="https://i.imgur.com/18TKHU2.png" alt="Drive list panel" width="95%"><br>
+  <img src="https://i.imgur.com/DasvJ8O.png" alt="Drive list panel" width="95%"><br>
   <em>Polished drive list with glow hover and compact device chips.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/JkBJ9vf.png" alt="About" width="95%"><br>
+  <img src="https://i.imgur.com/2ky5Gaq.png" alt="About" width="95%"><br>
   <em>About dialog.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/jXD9xrI.png" alt="Update dialog" width="95%"><br>
+  <img src="https://i.imgur.com/2ky5Gaq.png" alt="Update dialog" width="95%"><br>
   <em>In‑app update dialog with release notes and download/install flow.</em>
 </p>
 

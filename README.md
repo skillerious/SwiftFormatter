@@ -38,17 +38,17 @@ Custom title‑bar, dark‑mode UI, **Admin / Standard** badge, live PowerShell 
 ## 🖼️ UI Preview
 
 <p align="center">
-  <img src="https://i.imgur.com/DasvJ8O.png" alt="Drive list panel" width="85%"><br>
+  <img src="https://i.imgur.com/3w6D0Dh.png" alt="Drive list panel" width="85%"><br>
   <em>Polished drive list with glow‑hover effects and compact device chips.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/2ky5Gaq.png" alt="About dialog" width="85%"><br>
+  <img src="https://i.imgur.com/nkpEHt5.png" alt="About dialog" width="85%"><br>
   <em>About dialog with build metadata and license.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/2ky5Gaq.png" alt="Updater dialog" width="85%"><br>
+  <img src="https://i.imgur.com/vLwDZON.png" alt="Updater dialog" width="85%"><br>
   <em>In‑app updater showing release notes and download progress.</em>
 </p>
 

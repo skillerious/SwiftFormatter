@@ -3,7 +3,7 @@
   <img src="https://i.imgur.com/H5T3CsP.png" alt="Swift Formatter PRO logo" width="128" height="128">
 </p>
 
-<h1 align="center">Swift Formatter <em>PRO</em></h1>
+<h1 align="center">Swift Formatter <em>PRO</em> v1.3.2</h1>
 
 <p align="center">
   Sleek, Windows‑only USB‑drive formatter powered by <strong>Electron 31</strong>, <strong>Bootswatch Darkly</strong> and native <strong>PowerShell</strong>.

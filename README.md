@@ -38,7 +38,7 @@ Custom title‑bar, dark‑mode UI, **Admin / Standard** badge, live PowerShell 
 ## 🖼️ UI Preview
 
 <p align="center">
-  <img src="https://i.imgur.com/3w6D0Dh.png" alt="Drive list panel" width="85%"><br>
+  <img src="https://i.imgur.com/HJkdjO2.png" alt="Drive list panel" width="85%"><br>
   <em>Polished drive list with glow‑hover effects and compact device chips.</em>
 </p>
 

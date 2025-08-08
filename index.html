@@ -2,622 +2,449 @@
 <html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8" />
+  <style>html{background:#0b0f14!important;color-scheme:dark;}</style>
 
-  <!-- *** dark-until-ready — prevents white flash on launch *** -->
-  <style>
-    /* Forces the very first browser paint to be dark.
-       Immediately overridden once Bootswatch loads. */
-    html { background:#0b0f14 !important; color-scheme:dark; }
-  </style>
-
-  <!-- Content-Security-Policy -->
+  <!-- CSP -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self' 'unsafe-inline' data:;
-                 img-src 'self' data: https:;
-                 style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-                 font-src  'self' https://cdn.jsdelivr.net data:;
-                 script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-                 connect-src 'self';" />
+                 img-src     'self' data: https:;
+                 style-src   'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
+                 font-src    'self' https://cdn.jsdelivr.net data: https://fonts.gstatic.com;
+                 script-src  'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+                 connect-src 'self';">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Swift Formatter Pro</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Swift Formatter PRO</title>
 
-  <!-- External CSS (loads after the inline fallback) -->
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Fonts & vendor CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-  <!-- Your long inline style block (unchanged) -->
-  <style>
-    :root{
-      --bg:#0b0f14;
-      --card:rgba(20,26,33,.75);
-      --glass-border:rgba(255,255,255,.08);
-      --accent:#00e5ff;
-      --accent-2:#8a2be2;
-      --title-fg:#eaf6ff;
-      --titlebar-h:48px;
-      --left-col:540px;
-      --panel-head-h:56px;
-      --panel-foot-h:48px;
-    }
-
-    html, body, .app-grid, .panel, .panel * {
-      -webkit-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-    #cmdPreview, #output, #label, #label * { user-select: text; }
-    #cmdPreview::selection, #output::selection, #label::selection {
-      background: rgba(0,229,255,.30); color: #00121b;
-    }
-
-    html,body{
-      height:100%;
-      background:
-        radial-gradient(1200px 600px at 10% -20%,rgba(0,229,255,.12),transparent 60%),
-        radial-gradient(900px 900px at 110% 10%,rgba(138,43,226,.10),transparent 50%),
-        var(--bg);
-      color:#cfe3f5;
-      overflow:hidden;
-    }
-    *::-webkit-scrollbar{width:0;height:0} *{scrollbar-width:none}
-
-    #titlebar{
-      height:var(--titlebar-h);
-      -webkit-app-region:drag;
-      background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,.15));
-      border-bottom:1px solid var(--glass-border);
-      backdrop-filter:blur(8px);
-      display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:0 .75rem;
-    }
-    #titlebar .window-controls{-webkit-app-region:no-drag;display:flex;gap:.35rem}
-    #titlebar .btn-ghost{background:transparent;border:1px solid transparent}
-    #titlebar .btn-ghost:hover{border-color:var(--glass-border);background:rgba(255,255,255,.04)}
-    #titlebar .app-logo{width:14px;height:14px;border-radius:50%;
-      background:radial-gradient(circle at 30% 30%,var(--accent),var(--accent-2));
-      box-shadow:0 0 16px rgba(0,229,255,.6)}
-    #titlebar .app-title{font-weight:700;letter-spacing:.3px;color:var(--title-fg)}
-    .neon-badge{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#00121b}
-    .help-icon{font-size:0.95rem;color:#bcd1e6;opacity:.9;cursor:help}
-    .help-icon:hover{opacity:1}
-
-    .app-grid{
-      height:calc(100vh - var(--titlebar-h));
-      padding:16px;
-      display:grid;
-      grid-template-columns: var(--left-col) 1fr;
-      grid-gap:16px;
-      overflow:hidden;
-    }
-
-    .panel{
-      display:grid;
-      grid-template-rows: var(--panel-head-h) 1fr var(--panel-foot-h);
-      border:1px solid var(--glass-border);
-      background:var(--card);
-      border-radius:16px;
-      backdrop-filter:blur(10px);
-      min-height:0;
-    }
-    .panel-head,.panel-foot{
-      padding:0 12px;
-      display:flex;align-items:center;justify-content:space-between;
-      border-bottom:1px solid var(--glass-border);
-    }
-    .panel-foot{border-top:1px solid var(--glass-border);border-bottom:none}
-    .panel-title{font-weight:600}
-    .badge-chip{background:rgba(255,255,255,.06);border:1px solid var(--glass-border)}
-    .chip-warning{
-      display:inline-flex;align-items:center;gap:.35rem;
-      border:1px solid rgba(255,193,7,.3);color:#f8de7e;background:rgba(255,193,7,.08);
-      padding:4px 10px;border-radius:999px;font-size:.78rem;cursor:help;
-    }
-
-    .drive-container{position:relative; padding:10px 12px; overflow:hidden; min-height:0;}
-    .drive-list{display:grid;grid-auto-rows:min-content;gap:10px;overflow:hidden}
-    .drive-item{
-      position:relative;
-      display:grid;
-      grid-template-columns: 18px 40px 1fr auto;
-      align-items:center;
-      gap:10px;
-      padding:10px;
-      border:1px solid var(--glass-border);
-      border-radius:14px;
-      background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.12));
-      transition: box-shadow .2s ease, border-color .2s ease, background .2s ease, filter .2s ease, opacity .2s ease;
-      cursor: pointer;
-    }
-    .drive-item:hover{
-      border-color: rgba(0,229,255,.35);
-      box-shadow: 0 0 0 2px rgba(0,229,255,.22) inset;
-      filter: brightness(1.03);
-    }
-    .drive-item.selected{ border-color: rgba(0,229,255,.45); box-shadow: 0 0 0 2px rgba(0,229,255,.18) inset; }
-    .drive-item::after{
-      content:""; position:absolute; inset:-2px; border-radius:16px; pointer-events:none;
-      background: radial-gradient(120% 120% at 10% 0%, rgba(0,229,255,.28), transparent 60%),
-                  radial-gradient(120% 120% at 90% 100%, rgba(138,43,226,.25), transparent 60%);
-      filter: blur(14px); opacity:0; transition: opacity .25s ease;
-    }
-    .drive-item:hover::after{ opacity:.9; animation: glowPulse 1.6s ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) { .drive-item:hover::after{ animation:none; } }
-    @keyframes glowPulse{ 0%,100%{ filter: blur(14px); opacity:.9;} 50%{ filter: blur(18px); opacity:.65;} }
-    .no-glow .drive-item:hover::after{ animation:none; opacity:0 !important; }
-
-    .drive-radio{display:flex;align-items:center;justify-content:center}
-    .drive-avatar{ width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
-      border:1px solid var(--glass-border); font-size:1.1rem;
-      background:radial-gradient(circle at 30% 30%, rgba(0,229,255,.15), rgba(138,43,226,.12)); }
-    .drive-main{min-width:0}
-    .drive-title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .drive-sub{font-size:.78rem;color:#9fb0c7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .drive-meta{display:flex;align-items:center;gap:6px}
-    .pill{display:inline-flex;align-items:center;gap:.35rem;padding:2px 8px;border-radius:999px;
-      border:1px solid var(--glass-border);font-size:.75rem;background:rgba(255,255,255,.05)}
-    .pill.usb{background:rgba(0, 192, 120, .15);border-color:rgba(0,192,120,.35);color:#aaf5d8}
-    .pill.mount{background:rgba(138,43,226,.12);border-color:rgba(138,43,226,.35)}
-    .pill.size{background:rgba(255,255,255,.06)}
-    .dot{width:6px;height:6px;border-radius:50%;background:#7bdcb5}
-
-    .loader{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;}
-    .loader.hidden{display:none;}
-    .spinner-xxl{width:3.5rem; height:3.5rem; border-width:.35rem;}
-
-    .panel-content{ display:flex; flex-direction:column; min-height:0; overflow:hidden; }
-    .form-grid{padding:10px 12px;display:grid;grid-auto-rows:min-content;gap:8px}
-    .cmd-preview{display:flex;align-items:center;border:1px dashed rgba(255,255,255,.2);
-      background:rgba(255,255,255,.03);padding:6px 8px;border-radius:10px;min-height:34px}
-    .confirm-grid{display:grid;grid-template-columns:1fr auto;gap:8px}
-    .btn.glow{box-shadow:0 0 16px rgba(0,229,255,.25)}
-
-    .status-wrap{ padding:10px 12px; padding-top:0; display:flex; flex-direction:column; gap:8px; min-height:0; flex:1; }
-    .progress{height:10px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border)}
-    .log{display:flex;flex-direction:column;gap:6px;min-height:0;flex:1}
-    .terminal{
-      flex:1; min-height:0; overflow:auto; background:#0b1118;border:1px solid var(--glass-border);
-      border-radius:12px;padding:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;color:#e3f1ff
-    }
-
-    .about-hero{
-      display:flex; align-items:center; gap:.75rem;
-      background:linear-gradient(90deg, rgba(0,229,255,.12), rgba(138,43,226,.12));
-      border:1px solid var(--glass-border);
-      border-radius:12px; padding:.75rem;
-    }
-    .about-logo{
-      width:28px; height:28px; border-radius:8px;
-      background:radial-gradient(circle at 30% 30%,var(--accent),var(--accent-2));
-      box-shadow:0 0 16px rgba(0,229,255,.6);
-    }
-    .modal-content{
-      background:rgba(12,16,22,.96);
-      border:1px solid var(--glass-border);
-      box-shadow:0 14px 40px rgba(0,0,0,.45);
-      border-radius:16px;
-    }
-
-    .update-hero{
-      display:flex; align-items:center; justify-content:space-between; gap:.75rem;
-      border:1px solid var(--glass-border);
-      border-radius:12px; padding:.75rem .9rem;
-      background:
-        radial-gradient(100% 120% at 0% 0%, rgba(0,229,255,.12), transparent 60%),
-        radial-gradient(120% 100% at 100% 80%, rgba(138,43,226,.12), transparent 60%);
-    }
-    .update-badges{display:flex; gap:.5rem; flex-wrap:wrap}
-    .badge-soft{
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--glass-border);
-      border-radius:999px;
-      padding:.25rem .6rem;
-      font-weight:600;
-      font-size:.8rem;
-    }
-    .update-status{
-      display:flex; align-items:center; justify-content:space-between; gap:.75rem;
-      background:rgba(0,0,0,.25);
-      border:1px dashed rgba(255,255,255,.18);
-      border-radius:12px; padding:.6rem .75rem;
-    }
-    .changelog{
-      max-height:220px;
-      overflow:auto;
-      background:#0b1118;
-      border:1px solid var(--glass-border);
-      border-radius:12px;
-      padding:.6rem .75rem;
-      font-family:ui-monospace, Menlo, Consolas, monospace;
-      font-size:.86rem;
-      line-height:1.25rem;
-    }
-  </style>
+  <!-- App CSS -->
+  <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
-  <!-- Custom Titlebar -->
+  <!-- ───── Title-bar ───── -->
   <header id="titlebar">
     <div class="d-flex align-items-center gap-2">
-      <div class="app-logo"></div>
-      <div class="app-title">Swift Formatter <span class="badge neon-badge">PRO</span></div>
+      <!-- now an <img> for crisp scaling -->
+      <img src="build/logo.png" alt="Logo" class="app-logo">
+      <div class="app-title">
+        Swift Formatter <span class="badge neon-badge">PRO</span>
+      </div>
     </div>
     <div class="window-controls">
-      <button class="btn btn-ghost btn-sm" id="btn-update" title="Check for updates"><i class="bi bi-arrow-repeat"></i></button>
+      <button class="btn btn-ghost btn-sm" id="btn-update"   title="Check for updates"><i class="bi bi-arrow-repeat"></i></button>
       <button class="btn btn-ghost btn-sm" id="btn-settings" title="Settings"><i class="bi bi-gear"></i></button>
-      <button class="btn btn-ghost btn-sm" id="btn-about" title="About"><i class="bi bi-info-circle"></i></button>
-      <button class="btn btn-ghost btn-sm" id="btn-min" title="Minimize"><i class="bi bi-dash"></i></button>
-      <button class="btn btn-ghost btn-sm" id="btn-max" title="Maximize"><i class="bi bi-square"></i></button>
+      <button class="btn btn-ghost btn-sm" id="btn-about"    title="About"><i class="bi bi-info-circle"></i></button>
+      <button class="btn btn-ghost btn-sm" id="btn-min"      title="Minimize"><i class="bi bi-dash"></i></button>
+      <button class="btn btn-ghost btn-sm" id="btn-max"      title="Maximize"><i class="bi bi-square"></i></button>
       <button class="btn btn-ghost btn-sm text-danger" id="btn-close" title="Close"><i class="bi bi-x-lg"></i></button>
     </div>
   </header>
-
-  <main class="app-grid">
-    <!-- LEFT -->
-    <section class="panel">
-      <div class="panel-head">
-        <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-usb-drive"></i>
-          <span class="panel-title">Removable Drives</span>
-          <span class="badge badge-chip" id="driveCount">0</span>
+    <!-- ───────────────── Main Grid ───────────────── -->
+    <main class="app-grid">
+      <!-- ░ LEFT PANEL — Drives -->
+      <section class="panel">
+        <div class="panel-head">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-usb-drive"></i>
+            <span class="panel-title">Removable Drives</span>
+            <span class="badge badge-chip" id="driveCount">0</span>
+          </div>
+          <button id="refresh" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh </button>
         </div>
-        <button id="refresh" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
-      </div>
-
-      <div class="drive-container">
-        <div id="driveLoader" class="loader hidden">
-          <div class="spinner-border text-info spinner-xxl" role="status" aria-label="Loading"></div>
+        <div class="drive-container">
+          <div id="driveLoader" class="loader hidden">
+            <div class="spinner-border text-info spinner-xxl" role="status" aria-label="Loading"></div>
+          </div>
+          <div class="drive-list" id="driveList"></div>
         </div>
-        <div class="drive-list" id="driveList"></div>
-      </div>
-
-      <div class="panel-foot small text-muted">
-        <div>Tip: Select a drive on the left, review the command, then click <strong>Format</strong>.</div>
-        <div></div>
-      </div>
-    </section>
-
-    <!-- RIGHT -->
-    <section class="panel">
-      <div class="panel-head">
-        <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-magic"></i>
-          <span class="panel-title">Format Options</span>
+        <div class="panel-foot small text-muted">
+          <div>Tip: select a drive, review the command, then click <strong>Format</strong>. </div>
         </div>
-        <span id="destructive-pill"
-          class="chip-warning"
-          tabindex="0"
-          role="button"
-          data-bs-toggle="popover"
-          data-bs-trigger="focus hover"
-          data-bs-placement="left"
-          title="Destructive operation"
-          data-bs-html="true"
-          data-bs-content="<strong>Formatting will erase all data</strong> on the selected drive and create a new filesystem. Double-check the device and confirm the drive letter before proceeding.">
-          <i class="bi bi-exclamation-triangle me-1"></i>Destructive
-        </span>
-      </div>
-
-      <div class="panel-content">
-        <form id="formatForm" class="form-grid">
-          <div class="row g-2">
-            <div class="col-6">
-              <label class="form-label mb-1">Filesystem</label>
-              <select class="form-select form-select-sm" id="fsType">
-                <option>exFAT</option>
-                <option>FAT32</option>
-                <option>NTFS</option>
-              </select>
-            </div>
-            <div class="col-6">
-              <label class="form-label mb-1">Volume Label</label>
-              <input type="text" class="form-control form-control-sm" id="label" maxlength="32" placeholder="USB">
-            </div>
+      </section>
+      <!-- ░ RIGHT PANEL — Options -->
+      <section class="panel">
+        <div class="panel-head">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-magic"></i>
+            <span class="panel-title">Format Options</span>
           </div>
-
-          <div class="row g-2">
-            <div class="col-6">
-              <div class="form-check form-switch mt-1">
-                <input class="form-check-input" type="checkbox" id="quick" checked>
-                <label class="form-check-label" for="quick">Quick Format</label>
-              </div>
-            </div>
-            <div class="col-6 d-flex align-items-center justify-content-end gap-2 small">
-              <span class="text-muted">Selected:</span>
-              <code id="selectedDeviceDisplay" class="pill">None</code>
-              <button type="button" class="btn btn-outline-secondary btn-sm" id="clearSelection"><i class="bi bi-x-circle"></i></button>
-            </div>
-          </div>
-
-          <div>
-            <label class="form-label mb-1">Command Preview</label>
-            <div class="cmd-preview"><i class="bi bi-terminal me-2"></i><code id="cmdPreview">—</code></div>
-          </div>
-
-          <div class="confirm-grid">
-            <div>
-              <label class="form-label mb-1 d-flex align-items-center gap-2">
-                Type the drive letter to confirm
-                <i class="bi bi-question-circle help-icon"
-                  tabindex="0"
-                  role="button"
-                  data-bs-toggle="popover"
-                  data-bs-trigger="focus hover"
-                  data-bs-placement="right"
-                  title="Why confirm?"
-                  data-bs-html="true"
-                  data-bs-content="Formatting is irreversible. Typing the exact target (e.g. <code>E:</code>) helps prevent accidents. It must match the selected device’s drive letter.">
-                </i>
-              </label>
-              <input type="text" class="form-control form-control-sm" id="confirmText" placeholder="E:">
-            </div>
-            <div class="d-flex align-items-end justify-content-end">
-              <button type="submit" id="formatBtn" class="btn btn-primary glow">
-                <i class="bi bi-lightning-charge-fill me-1"></i>Format
-              </button>
-            </div>
-          </div>
-        </form>
-
-        <div class="status-wrap">
-          <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-activity"></i><span class="small text-muted">Progress</span>
-            </div>
-            <div class="small text-muted" id="percentLabel">—</div>
-          </div>
-
-          <div class="progress" role="progressbar">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" style="width:0%"></div>
-          </div>
-
-          <div class="log">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-journal-text"></i><span class="small text-muted">Output (last lines)</span>
-            </div>
-            <pre id="output" class="terminal mb-0"></pre>
-          </div>
+          <span id="destructive-pill" class="chip-warning" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="left" title="Destructive operation" data-bs-html="true" data-bs-content="
+														<strong>Formatting erases all data.</strong> Confirm the drive letter before proceeding.">
+            <i class="bi bi-exclamation-triangle me-1"></i>Destructive </span>
         </div>
-      </div>
-
-      <div class="panel-foot small text-muted">
-        <div>&copy; Robin Doak — Pro Edition</div>
-        <button class="btn btn-outline-secondary btn-sm" id="docsLink">
-          <i class="bi bi-box-arrow-up-right me-1"></i>Disk Tips
-        </button>
-      </div>
-    </section>
-  </main>
-
-  <!-- About Modal -->
-  <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header border-0">
-          <h5 class="modal-title d-flex align-items-center gap-2" id="aboutTitle">
-            <span class="about-logo"></span>
-            Swift Formatter <span class="badge bg-info text-dark ms-1">PRO</span>
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-
-        <div class="modal-body pt-0">
-          <div class="about-hero mb-3">
-            <i class="bi bi-usb-drive fs-4"></i>
-            <div class="small">
-              <div class="fw-semibold">A sleek Windows USB formatting utility</div>
-              <div class="text-muted">Electron • Bootstrap Dark • PowerShell</div>
-            </div>
-          </div>
-
-          <div class="row g-3 small">
-            <div class="col-6">
-              <div class="text-muted">Build</div>
-              <div id="aboutVersion">v—</div>
-            </div>
-            <div class="col-6">
-              <div class="text-muted">License</div>
-              <div>MIT</div>
-            </div>
-            <div class="col-6">
-              <div class="text-muted">Channel</div>
-              <div id="aboutChannel">stable</div>
-            </div>
-            <div class="col-6">
-              <div class="text-muted">Released</div>
-              <div id="aboutReleased">—</div>
-            </div>
-            <div class="col-12">
-              <div class="text-muted">Safety</div>
-              <div>Formatting is <strong>destructive</strong>. Confirm the correct drive letter (e.g. <code>E:</code>) before proceeding.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer border-0 d-flex justify-content-between">
-          <div class="small text-muted">© 2025 Robin Doak</div>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-light btn-sm" id="aboutRepo">
-              <i class="bi bi-github me-1"></i>Source
-            </button>
-            <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">
-              <i class="bi bi-check2 me-1"></i>Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings Modal -->
-  <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header border-0">
-          <h5 class="modal-title d-flex align-items-center gap-2" id="settingsTitle">
-            <i class="bi bi-gear"></i> Settings
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form id="settingsForm">
-          <div class="modal-body pt-0">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label">Default filesystem</label>
-                <select class="form-select" id="setDefaultFS">
+        <div class="panel-content">
+          <form id="formatForm" class="form-grid">
+            <!-- Filesystem + Volume Label -->
+            <div class="row g-2">
+              <div class="col-6">
+                <label class="form-label mb-1 d-flex align-items-center gap-2"> Filesystem <i class="bi bi-question-circle help-icon" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="right" title="Filesystem options" data-bs-html="true" data-bs-content="
+                     
+																		<strong>exFAT</strong> – modern, works on Windows / macOS / Linux; supports files &gt;4&nbsp;GB.
+																		<br>
+																			<strong>FAT32</strong> – legacy, universal, 
+																			<em>4 GB per-file limit</em>.
+																			<br>
+																				<strong>NTFS</strong> – Windows-only; supports permissions, compression, large files.">
+                  </i>
+                </label>
+                <select class="form-select form-select-sm" id="fsType">
                   <option>exFAT</option>
                   <option>FAT32</option>
                   <option>NTFS</option>
                 </select>
               </div>
-              <div class="col-12">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="setQuickDefault">
-                  <label class="form-check-label" for="setQuickDefault">Quick format by default</label>
+              <div class="col-6">
+                <label class="form-label mb-1 d-flex align-items-center gap-2"> Volume Label <i class="bi bi-question-circle help-icon" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="right" title="Volume label" data-bs-html="true" data-bs-content="This text becomes the 
+																				<strong>drive&nbsp;label</strong> you’ll see in File Explorer after formatting.">
+                  </i>
+                </label>
+                <input type="text" class="form-control form-control-sm" id="label" maxlength="32" placeholder="USB">
+              </div>
+            </div>
+            <!-- Quick / selected -->
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="form-check form-switch mt-1">
+                  <input class="form-check-input" type="checkbox" id="quick" checked>
+                  <label class="form-check-label" for="quick">Quick Format</label>
                 </div>
               </div>
-              <div class="col-12">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="setRequireConfirm">
-                  <label class="form-check-label" for="setRequireConfirm">Require typing confirmation to format (recommended)</label>
-                </div>
+              <div class="col-6 d-flex align-items-center justify-content-end gap-2 small">
+                <span class="text-muted">Selected:</span>
+                <code id="selectedDeviceDisplay" class="pill">None</code>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="clearSelection">
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              </div>
+            </div>
+            <!-- Command preview -->
+            <div>
+              <label class="form-label mb-1 d-flex align-items-center gap-2"> Command Preview <i class="bi bi-question-circle help-icon" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="right" title="Exact command" data-bs-html="true" data-bs-content="This is the exact 
+																					<strong>PowerShell&nbsp;command</strong> that will run to format the drive. Review it before executing.">
+                </i>
+              </label>
+              <div class="cmd-preview">
+                <i class="bi bi-terminal me-2"></i>
+                <code id="cmdPreview">—</code>
+              </div>
+            </div>
+            <!-- Confirm + Format -->
+            <div class="confirm-grid">
+              <div>
+                <label class="form-label mb-1 d-flex align-items-center gap-2"> Type the drive letter to confirm <i class="bi bi-question-circle help-icon" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="right" title="Why confirm?" data-bs-html="true" data-bs-content="Formatting is irreversible. Typing the exact target (e.g.&nbsp;
+																						<code>E:</code>) helps prevent mistakes.">
+                  </i>
+                </label>
+                <input type="text" class="form-control form-control-sm" id="confirmText" placeholder="E:">
+              </div>
+              <div class="d-flex align-items-end justify-content-end">
+                <button type="submit" id="formatBtn" class="btn btn-primary glow">
+                  <i class="bi bi-lightning-charge-fill me-1"></i>Format </button>
+              </div>
+            </div>
+          </form>
+          <!-- Status -->
+          <div class="status-wrap">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-activity"></i>
+                <span class="small text-muted">Progress</span>
+              </div>
+              <div class="small text-muted" id="percentLabel">—</div>
+            </div>
+            <div class="progress" role="progressbar">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" style="width:0%"></div>
+            </div>
+            <div class="log">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-journal-text"></i>
+                <span class="small text-muted">Output (last lines)</span>
+              </div>
+              <pre id="output" class="terminal mb-0"></pre>
+            </div>
+          </div>
+        </div>
+        <div class="panel-foot small text-muted">
+          <div>&copy; 2025 Robin Doak — Pro Edition</div>
+          <button class="btn btn-outline-secondary btn-sm" id="docsLink">
+            <i class="bi bi-box-arrow-up-right me-1"></i>Disk Tips </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- ──────────────────────────── Modals ──────────────────────────── -->
+    <div class="modal fade" id="aboutModal" tabindex="-1"
+        aria-labelledby="aboutTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+          <!-- Header -->
+          <div class="modal-header border-0">
+            <h5 class="modal-title d-flex align-items-center gap-2" id="aboutTitle">
+              <img src="build/logo.png" alt="Logo" class="about-logo">
+              Swift Formatter <span class="badge bg-info text-dark ms-1">PRO</span>
+            </h5>
+            <button type="button" class="btn-close btn-close-white"
+                    data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <!-- Body -->
+          <div class="modal-body pt-0">
+            <div class="about-hero mb-3">
+              <i class="bi bi-usb-drive fs-4"></i>
+              <div class="small">
+                <div class="fw-semibold">A sleek Windows USB formatting utility</div>
+                <div class="text-muted">Electron • Bootstrap Dark • PowerShell</div>
+              </div>
+            </div>
+
+            <div class="row g-3 small">
+              <div class="col-6">
+                <div class="text-muted">Build</div>
+                <div id="aboutVersion">v—</div>
+              </div>
+              <div class="col-6">
+                <div class="text-muted">License</div>
+                <div>MIT</div>
+              </div>
+              <div class="col-6">
+                <div class="text-muted">Channel</div>
+                <div id="aboutChannel">stable</div>
+              </div>
+              <div class="col-6">
+                <div class="text-muted">Released</div>
+                <div id="aboutReleased">—</div>
               </div>
               <div class="col-12">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="setAutofillConfirm">
-                  <label class="form-check-label" for="setAutofillConfirm">Autofill confirmation with selected device</label>
+                <div class="text-muted">Safety</div>
+                <div>
+                  Formatting is <strong>destructive</strong>. Confirm the correct
+                  drive letter (e.g.&nbsp;<code>E:</code>) before proceeding.
                 </div>
               </div>
-              <div class="col-12">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="setGlowHover">
-                  <label class="form-check-label" for="setGlowHover">Enable glow animation on drive hover</label>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="modal-footer border-0 d-flex justify-content-between">
+            <div class="small text-muted">© 2025 Robin Doak</div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-light btn-sm"
+                      id="aboutRepo">
+                <i class="bi bi-github me-1"></i>Source
+              </button>
+              <button type="button" class="btn btn-primary btn-sm"
+                      data-bs-dismiss="modal">
+                <i class="bi bi-check2 me-1"></i>Close
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title d-flex align-items-center gap-2" id="settingsTitle">
+              <i class="bi bi-gear"></i> Settings
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="settingsForm">
+            <div class="modal-body pt-0">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label">Default filesystem</label>
+                  <select class="form-select" id="setDefaultFS">
+                    <option>exFAT</option>
+                    <option>FAT32</option>
+                    <option>NTFS</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="setQuickDefault">
+                    <label class="form-check-label" for="setQuickDefault">Quick format by default</label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="setRequireConfirm">
+                    <label class="form-check-label" for="setRequireConfirm">Require typing confirmation to format</label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="setAutofillConfirm">
+                    <label class="form-check-label" for="setAutofillConfirm">Autofill confirmation with selected device</label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="setGlowHover">
+                    <label class="form-check-label" for="setGlowHover">Enable glow animation on drive hover</label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <hr class="text-secondary">
+                  <label class="form-label mb-1">GitHub token (PAT)</label>
+                  <input type="password" class="form-control" id="setGhToken" placeholder="Paste token (optional)">
+                  <div class="form-text">Stored encrypted in your AppData. Leave blank to keep current.</div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer border-0 d-flex justify-content-between">
+              <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-1"></i>Save </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- Update Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1"
+        aria-labelledby="updateTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+          <!-- Header -->
+          <div class="modal-header border-0">
+            <h5 class="modal-title d-flex align-items-center gap-2" id="updateTitle">
+              <i class="bi bi-cloud-arrow-down"></i> Software Update
+            </h5>
+            <button type="button" class="btn-close btn-close-white"
+                    data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <!-- Body -->
+          <div class="modal-body pt-0">
+
+            <!-- Hero -->
+            <div class="update-hero mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <img src="build/logo.png" alt="Logo" class="about-logo">
+                <div class="small">
+                  <div class="fw-semibold">Swift Formatter PRO</div>
+                  <div class="text-muted">
+                    Stay up to date for fixes &amp; features
+                  </div>
                 </div>
               </div>
 
-              <div class="col-12">
-                <hr class="text-secondary">
-                <label class="form-label mb-1">GitHub token (for update checks & downloads)</label>
-                <input type="password" class="form-control" id="setGhToken" placeholder="Paste token (optional)">
-                <div class="form-text">Stored encrypted in your AppData. Leave blank to keep current.</div>
+              <!-- Badges -->
+              <div class="update-badges">
+                <span class="badge-soft" id="badgeCurrent">Current: v—</span>
+                <span class="badge-soft" id="badgeLatest">Latest: v—</span>
+                <span class="badge-soft" id="badgeChannel">
+                  <i class="bi bi-rocket-takeoff me-1"></i>Stable
+                </span>
               </div>
             </div>
+
+            <!-- Status row -->
+            <div class="update-status mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-activity"></i>
+                <span class="small text-muted" id="updateStatusText">
+                  Not checked yet.
+                </span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <div id="updateSpinner"
+                    class="spinner-border spinner-border-sm text-info d-none"
+                    role="status" aria-label="Loading"></div>
+
+                <button type="button" class="btn btn-outline-light btn-sm"
+                        id="updateCheckNow">
+                  <i class="bi bi-arrow-repeat me-1"></i>Check now
+                </button>
+
+                <button type="button" class="btn btn-primary btn-sm"
+                        id="updateGetBtn" disabled>
+                  <i class="bi bi-cloud-arrow-down me-1"></i>
+                  <span id="updateGetLabel">Get update</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Release notes -->
+            <div class="mb-1 d-flex align-items-center gap-2">
+              <i class="bi bi-journal-text"></i>
+              <span class="small text-muted">Release notes</span>
+            </div>
+            <pre class="changelog mb-0" id="updateChangelog">—</pre>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="modal-footer border-0 d-flex justify-content-between">
+            <div class="small text-muted" id="updateFooterNote">
+              You’re on the latest version.
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-light btn-sm"
+                      id="updateOpenRelease">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Open release
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Elevation -->
+    <div class="modal fade" id="elevateModal" tabindex="-1" aria-labelledby="elevateTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title d-flex align-items-center gap-2" id="elevateTitle">
+              <i class="bi bi-shield-lock"></i> Administrator Required
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body pt-0">
+            <div class="about-hero mb-3">
+              <i class="bi bi-exclamation-triangle fs-5"></i>
+              <div class="small">
+                <div class="fw-semibold">Formatting needs elevated permissions</div>
+                <div class="text-muted">Windows requires Administrator rights to format drives. Swift Formatter can relaunch itself with elevated privileges.</div>
+              </div>
+            </div>
+            <div class="update-status mb-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-activity"></i>
+                <span class="small text-muted" id="elevateStatus">Formatting requires admin rights.</span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <div id="elevateSpinner" class="spinner-border spinner-border-sm text-info d-none" role="status" aria-label="Loading"></div>
+              </div>
+            </div>
+            <div class="small text-muted">Tip: you can also close this window and run Swift Formatter manually as Administrator (right-click → <em>Run as administrator</em>). </div>
           </div>
           <div class="modal-footer border-0 d-flex justify-content-between">
-            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Update Modal -->
-  <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header border-0">
-          <h5 class="modal-title d-flex align-items-center gap-2" id="updateTitle">
-            <i class="bi bi-cloud-arrow-down"></i> Software Update
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-
-        <div class="modal-body pt-0">
-          <div class="update-hero mb-3">
-            <div class="d-flex align-items-center gap-2">
-              <div class="about-logo"></div>
-              <div class="small">
-                <div class="fw-semibold">Swift Formatter PRO</div>
-                <div class="text-muted">Stay up to date for fixes & features</div>
-              </div>
-            </div>
-            <div class="update-badges">
-              <span class="badge-soft" id="badgeCurrent">Current: v—</span>
-              <span class="badge-soft" id="badgeLatest">Latest: v—</span>
-              <span class="badge-soft" id="badgeChannel"><i class="bi bi-rocket-takeoff me-1"></i>Stable</span>
-            </div>
-          </div>
-
-          <div class="update-status mb-3">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-activity"></i>
-              <span class="small text-muted" id="updateStatusText">Not checked yet.</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <div id="updateSpinner" class="spinner-border spinner-border-sm text-info d-none" role="status" aria-label="Loading"></div>
-              <button type="button" class="btn btn-outline-light btn-sm" id="updateCheckNow">
-                <i class="bi bi-arrow-repeat me-1"></i>Check now
-              </button>
-              <button type="button" class="btn btn-primary btn-sm" id="updateGetBtn" disabled>
-                <i class="bi bi-cloud-arrow-down me-1"></i><span id="updateGetLabel">Get update</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="mb-1 d-flex align-items-center gap-2">
-            <i class="bi bi-journal-text"></i><span class="small text-muted">Release notes</span>
-          </div>
-          <pre class="changelog mb-0" id="updateChangelog">—</pre>
-        </div>
-
-        <div class="modal-footer border-0 d-flex justify-content-between">
-          <div class="small text-muted" id="updateFooterNote">You’re on the latest version.</div>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-light btn-sm" id="updateOpenRelease"><i class="bi bi-box-arrow-up-right me-1"></i>Open release</button>
+            <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal" id="elevateCancelBtn">Cancel</button>
+            <button type="button" class="btn btn-primary btn-sm" id="elevateConfirmBtn">
+              <i class="bi bi-box-arrow-up-right me-1"></i> Relaunch as Admin </button>
           </div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Elevation / Admin Modal -->
-  <div class="modal fade" id="elevateModal" tabindex="-1" aria-labelledby="elevateTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header border-0">
-          <h5 class="modal-title d-flex align-items-center gap-2" id="elevateTitle">
-            <i class="bi bi-shield-lock"></i> Administrator Required
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-
-        <div class="modal-body pt-0">
-          <div class="about-hero mb-3">
-            <i class="bi bi-exclamation-triangle fs-5"></i>
-            <div class="small">
-              <div class="fw-semibold">Formatting needs elevated permissions</div>
-              <div class="text-muted">Windows requires Administrator rights to format drives. Swift Formatter can relaunch itself with elevated privileges.</div>
-            </div>
-          </div>
-
-          <div class="update-status mb-2">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-activity"></i>
-              <span class="small text-muted" id="elevateStatus">Formatting requires admin rights.</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <div id="elevateSpinner" class="spinner-border spinner-border-sm text-info d-none" role="status" aria-label="Loading"></div>
-            </div>
-          </div>
-
-          <div class="small text-muted">
-            Tip: You can also close this window and run Swift Formatter manually as Administrator (right-click → <em>Run as administrator</em>).
-          </div>
-        </div>
-
-        <div class="modal-footer border-0 d-flex justify-content-between">
-          <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal" id="elevateCancelBtn">Cancel</button>
-          <button type="button" class="btn btn-primary btn-sm" id="elevateConfirmBtn">
-            <i class="bi bi-box-arrow-up-right me-1"></i> Relaunch as Admin
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="./renderer.js"></script>
-</body>
+    <!-- vendor JS + renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="./renderer.js"></script>
+  </body>
 </html>

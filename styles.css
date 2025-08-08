@@ -1,46 +1,570 @@
-:root{
-  --bg:#0b0f14;
-  --card:rgba(20,26,33,.75);
-  --glass-border:rgba(255,255,255,.08);
-  --accent:#00e5ff;
-  --accent-2:#8a2be2;
-  --title-fg:#eaf6ff;
-  --titlebar-h:48px;
+/*══════════════════════════════════════════════════════════════
+  Swift Formatter PRO ▸  Master Stylesheet  (styles.css)
+  — complete file —
+══════════════════════════════════════════════════════════════*/
+
+/* ───── 1. Variables ───────────────────────────────────────── */
+:root {
+  --bg: #0b0f14;
+  --card: rgba(20, 26, 33, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --accent: #00e5ff;
+  --accent-2: #8a2be2;
+  --title-fg: #eaf6ff;
+  --titlebar-h: 48px;
+  --left-col: 540px;
+  --panel-head-h: 56px;
+  --panel-foot-h: 48px;
 }
-html,body{height:100%;background:radial-gradient(1200px 600px at 10% -20%,rgba(0,229,255,.12),transparent 60%),radial-gradient(900px 900px at 110% 10%,rgba(138,43,226,.10),transparent 50%),var(--bg);color:#cfe3f5;overflow:hidden}
-*::-webkit-scrollbar{width:0;height:0} *{scrollbar-width:none}
 
-/* Titlebar */
-#titlebar{height:var(--titlebar-h);-webkit-app-region:drag;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,.15));border-bottom:1px solid var(--glass-border);backdrop-filter:blur(8px)}
-#titlebar .window-controls{-webkit-app-region:no-drag;display:flex;gap:.35rem}
-#titlebar .btn-ghost{background:transparent;border:1px solid transparent}
-#titlebar .btn-ghost:hover{border-color:var(--glass-border);background:rgba(255,255,255,.04)}
-#titlebar .app-logo{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--accent),var(--accent-2));box-shadow:0 0 16px rgba(0,229,255,.6)}
-#titlebar .app-title{font-weight:700;letter-spacing:.3px;color:var(--title-fg)}
-.neon-badge{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#00121b}
+/* ───── 2. Base tweaks ─────────────────────────────────────── */
+html,
+body,
+.app-grid,
+.panel,
+.panel * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+#cmdPreview,
+#output,
+#label,
+#label * {
+  user-select: text;
+}
+#cmdPreview::selection,
+#output::selection,
+#label::selection {
+  background: rgba(0, 229, 255, 0.3);
+  color: #00121b;
+}
+html,
+body {
+  height: 100%;
+  background: radial-gradient(
+      1200px 600px at 10% -20%,
+      rgba(0, 229, 255, 0.12),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 900px at 110% 10%,
+      rgba(138, 43, 226, 0.1),
+      transparent 50%
+    ),
+    var(--bg);
+  color: #cfe3f5;
+  overflow: hidden;
+}
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+* {
+  scrollbar-width: none;
+}
 
-/* Layout */
-.app-grid{height:calc(100vh - var(--titlebar-h));padding:16px;display:grid;grid-template-columns:1fr 1fr;grid-gap:16px;overflow:hidden}
-.panel{display:grid;grid-template-rows:auto 1fr auto;border:1px solid var(--glass-border);background:var(--card);border-radius:16px;backdrop-filter:blur(10px);min-height:0}
-.panel-head,.panel-foot{padding:10px 12px;border-bottom:1px solid var(--glass-border)}
-.panel-foot{border-top:1px solid var(--glass-border);border-bottom:none}
-.panel-title{font-weight:600}
-.badge-chip{background:rgba(255,255,255,.06);border:1px solid var(--glass-border)}
-.chip-warning{display:inline-flex;align-items:center;gap:.25rem;border:1px solid rgba(255,193,7,.3);color:#f8de7e;background:rgba(255,193,7,.08);padding:2px 8px;border-radius:999px;font-size:.75rem}
+/* ───── 3. Logo imgs (PNG) ─────────────────────────────────── */
+.app-logo,
+.about-logo {
+  display: block;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+}
+.app-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.45));
+}
+.about-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.55));
+}
 
-/* Device table */
-.device-table-wrapper{padding:10px 12px;overflow:hidden}
-.table-compact thead th{font-size:.78rem;color:#a6b4c8;border-color:var(--glass-border)}
-.table-compact tbody td{font-size:.85rem;border-color:var(--glass-border)}
-.table-compact tbody tr:hover{background:rgba(255,255,255,.03)}
-.radio-cell{display:flex;align-items:center;justify-content:center}
-.code-pill{background:rgba(255,255,255,.06);border:1px solid var(--glass-border);padding:2px 8px;border-radius:999px}
+/* ───── 4. Title-bar ───────────────────────────────────────── */
+#titlebar {
+  height: var(--titlebar-h);
+  -webkit-app-region: drag;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.15));
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+}
+#titlebar .window-controls {
+  -webkit-app-region: no-drag;
+  display: flex;
+  gap: 0.35rem;
+}
+#titlebar .btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+}
+#titlebar .btn-ghost:hover {
+  border-color: var(--glass-border);
+  background: rgba(255, 255, 255, 0.04);
+}
+#titlebar .app-title {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--title-fg);
+}
+.neon-badge {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #00121b;
+}
+.help-icon {
+  font-size: 0.95rem;
+  color: #bcd1e6;
+  opacity: 0.9;
+  cursor: help;
+}
+.help-icon:hover {
+  opacity: 1;
+}
 
-/* Options / Status */
-.form-grid{padding:10px 12px;display:grid;grid-auto-rows:min-content;gap:8px}
-.cmd-preview{display:flex;align-items:center;border:1px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.03);padding:6px 8px;border-radius:10px;min-height:34px}
-.confirm-grid{display:grid;grid-template-columns:1fr auto;gap:8px}
-.btn.glow{box-shadow:0 0 16px rgba(0,229,255,.25)}
-.status-wrap{padding:10px 12px;padding-top:0}
-.progress{height:10px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border)}
-.terminal{height:120px;overflow:auto;background:#0b1118;border:1px solid var(--glass-border);border-radius:12px;padding:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;color:#e3f1ff}
+/* ───── 5. Layout grid / panel shell ───────────────────────── */
+.app-grid {
+  height: calc(100vh - var(--titlebar-h));
+  padding: 16px;
+  display: grid;
+  grid-template-columns: var(--left-col) 1fr;
+  gap: 16px;
+  overflow: hidden;
+}
+.panel {
+  display: grid;
+  grid-template-rows: var(--panel-head-h) 1fr var(--panel-foot-h);
+  background: var(--card);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  min-height: 0;
+}
+.panel-head,
+.panel-foot {
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--glass-border);
+}
+.panel-foot {
+  border-top: 1px solid var(--glass-border);
+  border-bottom: none;
+}
+.panel-title {
+  font-weight: 600;
+}
+.badge-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+}
+.chip-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  color: #f8de7e;
+  background: rgba(255, 193, 7, 0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  cursor: help;
+}
+
+/* ───── 6. Drive list ─────────────────────────────────────── */
+.drive-container {
+  position: relative;
+  padding: 10px 12px;
+  overflow: hidden;
+  min-height: 0;
+}
+.drive-list {
+  display: grid;
+  grid-auto-rows: min-content;
+  gap: 10px;
+  overflow: hidden;
+}
+.drive-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 18px 40px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  cursor: pointer;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.12));
+  transition: box-shadow 0.2s, border-color 0.2s, background 0.2s, filter 0.2s,
+    opacity 0.2s;
+}
+.drive-item:hover {
+  border-color: rgba(0, 229, 255, 0.35);
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.22) inset;
+  filter: brightness(1.03);
+}
+.drive-item.selected {
+  border-color: rgba(0, 229, 255, 0.45);
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.18) inset;
+}
+.drive-item::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  pointer-events: none;
+  background: radial-gradient(
+      120% 120% at 10% 0%,
+      rgba(0, 229, 255, 0.28),
+      transparent 60%
+    ),
+    radial-gradient(
+      120% 120% at 90% 100%,
+      rgba(138, 43, 226, 0.25),
+      transparent 60%
+    );
+  filter: blur(14px);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.drive-item:hover::after {
+  opacity: 0.9;
+  animation: glowPulse 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .drive-item:hover::after {
+    animation: none;
+  }
+}
+@keyframes glowPulse {
+  0%,
+  100% {
+    filter: blur(14px);
+    opacity: 0.9;
+  }
+  50% {
+    filter: blur(18px);
+    opacity: 0.65;
+  }
+}
+.no-glow .drive-item:hover::after {
+  animation: none;
+  opacity: 0 !important;
+}
+
+.drive-radio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.drive-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--glass-border);
+  font-size: 1.1rem;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(0, 229, 255, 0.15),
+    rgba(138, 43, 226, 0.12)
+  );
+}
+.drive-main {
+  min-width: 0;
+}
+.drive-title {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.drive-sub {
+  font-size: 0.78rem;
+  color: #9fb0c7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.drive-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+.pill.usb {
+  background: rgba(0, 192, 120, 0.15);
+  border-color: rgba(0, 192, 120, 0.35);
+  color: #aaf5d8;
+}
+.pill.mount {
+  background: rgba(138, 43, 226, 0.12);
+  border-color: rgba(138, 43, 226, 0.35);
+}
+.pill.size {
+  background: rgba(255, 255, 255, 0.06);
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7bdcb5;
+}
+
+/* loader */
+.loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.loader.hidden {
+  display: none;
+}
+.spinner-xxl {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-width: 0.35rem;
+}
+
+/* ───── 7. Form + status ──────────────────────────────────── */
+.panel-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.form-grid {
+  padding: 10px 12px;
+  display: grid;
+  grid-auto-rows: min-content;
+  gap: 8px;
+}
+.cmd-preview {
+  display: flex;
+  align-items: center;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px 8px;
+  border-radius: 10px;
+  min-height: 34px;
+}
+.confirm-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+.btn.glow {
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.25);
+}
+
+.status-wrap {
+  padding: 10px 12px;
+  padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  flex: 1;
+}
+.progress {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+}
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  flex: 1;
+}
+
+/* ─── terminal output box: wrap long lines ─── */
+.terminal {
+  flex: 1;
+  min-height: 0;
+  background: #0b1118;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 8px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  color: #e3f1ff;
+  white-space: pre-wrap; /* ← wrap long lines but preserve spacing */
+  word-break: break-word; /* ← break really long tokens */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ───── 8. About & Update hero blocks ─────────────────────── */
+.about-hero,
+.update-hero {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+.about-hero {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 229, 255, 0.12),
+    rgba(138, 43, 226, 0.12)
+  );
+}
+.update-hero {
+  justify-content: space-between;
+  padding: 0.75rem 0.9rem;
+  background: radial-gradient(
+      100% 120% at 0% 0%,
+      rgba(0, 229, 255, 0.12),
+      transparent 60%
+    ),
+    radial-gradient(
+      120% 100% at 100% 80%,
+      rgba(138, 43, 226, 0.12),
+      transparent 60%
+    );
+}
+.update-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.badge-soft {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+.update-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+}
+.changelog {
+  max-height: 220px;
+  overflow: auto;
+  background: #0b1118;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.86rem;
+  line-height: 1.25rem;
+}
+
+/* modal chrome */
+.modal-content {
+  background: rgba(12, 16, 22, 0.96);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+  border-radius: 16px;
+}
+
+/* ───── 9. Custom Popover Theme ───────────────────────────── */
+.popover {
+  background: rgba(20, 26, 33, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45);
+  max-width: 260px;
+  font-family: inherit;
+  font-size: 0.84rem;
+  color: #cfe3f5;
+  transition: box-shadow 0.25s, border-color 0.25s;
+}
+.popover-header {
+  background: transparent;
+  border-bottom: 1px solid var(--glass-border);
+  padding: 0.7rem 0.9rem 0.45rem;
+  font-weight: 600;
+  color: #eaf6ff;
+  position: relative;
+  overflow: hidden;
+}
+.popover-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 5px rgba(0, 229, 255, 0.35);
+  pointer-events: none;
+}
+.popover-header::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.popover-body {
+  padding: 0.6rem 0.9rem 0.8rem;
+  line-height: 1.25rem;
+  color: #cfe3f5;
+}
+
+/* arrow tweaks */
+.popover .popover-arrow::before,
+.popover .popover-arrow::after {
+  border-width: 7px;
+}
+.popover .popover-arrow::before {
+  border-color: rgba(20, 26, 33, 0.92);
+}
+.popover .popover-arrow::after {
+  border-color: var(--glass-border);
+}
+.popover[data-popper-placement^="top"] .popover-arrow::before,
+.popover[data-popper-placement^="top"] .popover-arrow::after {
+  transform: translateY(1px);
+}
+
+/* hover / focus ring */
+[data-bs-toggle="popover"]:focus-visible,
+[data-bs-toggle="popover"].show {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.5);
+}
+.popover:hover {
+  box-shadow: 0 10px 36px rgba(0, 229, 255, 0.12),
+    0 0 0 1px rgba(0, 229, 255, 0.35), 0 10px 32px rgba(0, 0, 0, 0.45);
+  border-color: rgba(0, 229, 255, 0.28);
+}

@@ -36,6 +36,7 @@
       "main.js",
       "preload.js",
       "renderer.js",
+      "styles.css",
       "version.json",
       "package.json",
       "build/**"

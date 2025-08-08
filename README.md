@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://i.imgur.com/H5T3CsP.png" alt="Swift Formatter PRO logo" width="128" height="128">
+  <img src="https://i.imgur.com/5TUVJ3n.png" alt="Swift Formatter PRO logo" width="128" height="128">
 </p>
 
 <h1 align="center">Swift Formatter <em>PRO</em> v1.3.2</h1>
@@ -38,17 +38,17 @@ Custom title‑bar, dark‑mode UI, **Admin / Standard** badge, live PowerShell 
 ## 🖼️ UI Preview
 
 <p align="center">
-  <img src="https://i.imgur.com/HJkdjO2.png" alt="Drive list panel" width="85%"><br>
+  <img src="https://i.imgur.com/NNk2RBr.png" alt="Drive list panel" width="85%"><br>
   <em>Polished drive list with glow‑hover effects and compact device chips.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/nkpEHt5.png" alt="About dialog" width="85%"><br>
+  <img src="https://i.imgur.com/sCinLBX.png" alt="About dialog" width="85%"><br>
   <em>About dialog with build metadata and license.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/vLwDZON.png" alt="Updater dialog" width="85%"><br>
+  <img src="https://i.imgur.com/LMvzX6a.png" alt="Updater dialog" width="85%"><br>
   <em>In‑app updater showing release notes and download progress.</em>
 </p>
 

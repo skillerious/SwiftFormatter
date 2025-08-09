@@ -1,6 +1,4 @@
 // preload.js
-// Exposes a safe API surface to the renderer (contextIsolation: true)
-
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("api", {
@@ -29,15 +27,17 @@ contextBridge.exposeInMainWorld("api", {
   hasGitHubToken: () => ipcRenderer.invoke("secret:hasToken"),
 
   // updates
-  checkForUpdate:   () => ipcRenderer.invoke("update:check"),
-  downloadUpdate:   (payload) => ipcRenderer.invoke("update:download", payload),
-  installUpdate:    (filePath) => ipcRenderer.invoke("update:install", filePath),
+  checkForUpdate: () => ipcRenderer.invoke("update:check"),
+  downloadUpdate: (payload) => ipcRenderer.invoke("update:download", payload),
+  installUpdate: (filePath) => ipcRenderer.invoke("update:install", filePath),
   onUpdateProgress: (cb) => ipcRenderer.on("update:progress", (_e, p) => cb?.(p)),
 
-  // drives — helpers
-  ejectDrive: (letter) => ipcRenderer.invoke("drive:eject", letter), // "E" or "E:"
-  openDrive:  (letter) => ipcRenderer.invoke("drive:open", letter),  // opens root in Explorer
+  // drives — open/eject
+  ejectDrive: (letter) => ipcRenderer.invoke("drive:eject", letter),
+  openDrive:  (letter) => ipcRenderer.invoke("drive:open", letter),
 
-  // auto-refresh (WMI -> main -> renderer)
-  onDrivesChanged: (cb) => ipcRenderer.on("drives:changed", (_e, evt) => cb?.(evt)),
+  // device monitor
+  startDriveWatch: () => ipcRenderer.invoke("drives:watch/start"),
+  stopDriveWatch:  () => ipcRenderer.invoke("drives:watch/stop"),
+  onDrivesChanged: (cb) => ipcRenderer.on("drives:changed", (_e, payload) => cb?.(payload)),
 });

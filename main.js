@@ -1,5 +1,15 @@
-// main.js — Swift Formatter PRO  (Windows-only · Electron main process)
-// © 2025 Robin Doak · MIT
+// ─────────────────────────────────────────────────────────────────────────────
+//  main.js — Swift Formatter PRO  (Windows-only · Electron main process)
+//  © 2025 Robin Doak   ·   MIT-licensed
+// ─────────────────────────────────────────────────────────────────────────────
+//
+//  ▸ Robust admin detection & self-elevation   (dev + packaged)
+//  ▸ Rolling debug log   (dev: project root  •  packaged: %APPDATA%)
+//  ▸ DPAPI helpers for encrypted GitHub token
+//  ▸ Updater, drive enumeration (with per-volume fs/size/free), formatter
+//  ▸ SAFETY: Escapes label for PowerShell + refuses non-USB/system disks
+//  ▸ Device monitor: WMI watcher + polling fallback, emits 'drives:changed'
+// ─────────────────────────────────────────────────────────────────────────────
 
 "use strict";
 
@@ -22,7 +32,7 @@ function dbg(msg) {
   try { fs.appendFileSync(LOG_PATH, ln, "utf8"); } catch {}
   console.log("[DBG]", msg);
 }
-function sendDbg(msg) {
+function sendDbgToRenderer(msg) {
   dbg(msg);
   mainWindow?.webContents.send("format:progress", `[dbg] ${msg}\n`);
 }
@@ -34,14 +44,12 @@ function iconPath() {
   const prod = path.join(process.resourcesPath || "", "build", "logo.ico");
   return fs.existsSync(prod) ? prod : (fs.existsSync(dev) ? dev : undefined);
 }
-const jtry = (s) => { try { return JSON.parse(s); } catch { return null; } };
 
 // PowerShell safe single-quoted string
 function psq(str) {
-  const s = (str ?? "").toString().slice(0, 32); // Volume labels: max 32 chars
+  const s = (str ?? "").toString().slice(0, 32); // Windows label max 32 chars
   return `'${s.replace(/'/g, "''")}'`;
 }
-// Allow only supported filesystems to reach PowerShell
 function sanitizeFs(fsType) {
   const v = (fsType || "").toUpperCase();
   return ["EXFAT", "FAT32", "NTFS"].includes(v) ? v : "EXFAT";
@@ -68,16 +76,12 @@ function createWindow() {
   mainWindow.once("ready-to-show", () => {
     mainWindow.maximize();
     mainWindow.show();
-    startWmiWatcher(); // ← start auto-refresh watcher when UI is visible
   });
 }
 
 app.whenReady().then(() => { dbg("App ready"); createWindow(); });
 app.on("activate", () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
-app.on("window-all-closed", () => { 
-  stopWmiWatcher();
-  if (process.platform !== "darwin") app.quit(); 
-});
+app.on("window-all-closed", () => { if (process.platform !== "darwin") app.quit(); });
 
 // ────────────────────────────── title-bar IPC plumbing
 ipcMain.on   ("window:minimize", () => mainWindow.minimize());
@@ -156,7 +160,7 @@ ipcMain.handle("app:relaunchElevated", async () => {
 
     if (stderr.trim() || /^1$/.test(stdout.trim())) return false;
 
-    sendDbg("Elevated instance launched, exiting non-admin.");
+    sendDbgToRenderer("Elevated instance launched, exiting non-admin.");
     setTimeout(()=>app.quit(),150);
     return true;
   } catch(e){
@@ -276,74 +280,83 @@ ipcMain.handle("update:install", async (_e,f)=>{
   }catch(e){ dbg(`update:install error: ${e.message}`); return { ok:false, error:e.message }; }
 });
 
-// ────────────────────────────── drive enumeration (with volumeLabel)
+// ────────────────────────────── drive enumeration (rich volume info)
 ipcMain.handle("drives:list", async () => {
   try { return await listDrives(); }
-  catch (e) { sendDbg(`Error listing drives: ${e.message}`); return []; }
+  catch (e) { sendDbgToRenderer(`Error listing drives: ${e.message}`); return []; }
 });
 
 async function listDrives() {
-  /*  PowerShell – returns a JSON array:
-        { device, description, volumeLabel, size, isUSB, isReadOnly, isSystem,
-          isRemovable, busType, mountpoints[] }
-  */
+  // Returns array of disks. Each disk has .volumes[] with per-letter info.
   const ps = `
 $ErrorActionPreference = 'SilentlyContinue'
 
-function Build($disk, $letters, $label) {
+function VolInfo($v){
+  [pscustomobject]@{
+    letter = if ($v.DriveLetter) { ($v.DriveLetter + ':') } else { '' }
+    label  = $v.FileSystemLabel
+    fs     = $v.FileSystem
+    size   = [int64]$v.Size
+    free   = [int64]$v.SizeRemaining
+  }
+}
+
+function Build($disk, $vols){
+  $letters = @($vols | Where-Object { $_.letter } | ForEach-Object { $_.letter })
+  $label   = ($vols | Where-Object { $_.label } | Select-Object -First 1).label
+  $tot     = 0
+  foreach($vv in $vols){ $tot += [int64]$vv.size }
+
   [pscustomobject]@{
     device      = "\\\\.\\PHYSICALDRIVE$($disk.Number)"
     description = $disk.FriendlyName
     volumeLabel = $label
-    size        = [int64]$disk.Size
+    size        = [int64]$tot
     isUSB       = ($disk.BusType -eq 'USB')
     isReadOnly  = [bool]$disk.IsReadOnly
     isSystem    = [bool]$disk.IsSystem
     isRemovable = $true
     busType     = $disk.BusType.ToString()
     mountpoints = $letters
+    volumes     = $vols
   }
 }
-
-$map = @{}
-
-Get-Volume |
-  Where-Object { $_.DriveType -eq 'Removable' -or $_.DriveType -eq 'Removable Disk' } |
-  ForEach-Object {
-    if ($_.DriveLetter) {
-      $part = Get-Partition -DriveLetter $_.DriveLetter
-      $disk = Get-Disk -Number $part.DiskNumber
-      $k    = $disk.Number
-      if (-not $map[$k]) {
-        $map[$k] = @{ disk = $disk; letters = @(); label = $_.FileSystemLabel }
-      }
-      $map[$k].letters += ("$($_.DriveLetter):")
-      if (-not $map[$k].label) { $map[$k].label = $_.FileSystemLabel }
-    }
-  }
 
 $items = @()
 
-foreach ($kv in $map.GetEnumerator()) {
-  $items += Build $kv.Value.disk $kv.Value.letters $kv.Value.label
+# Strategy 1: Start from volumes with DriveType = Removable to keep only removable media
+$vols = Get-Volume | Where-Object { $_.DriveType -eq 'Removable' -or $_.DriveType -eq 'Removable Disk' }
+$map  = @{}
+
+foreach($v in $vols){
+  if (-not $v.DriveLetter) { continue }
+  $part = Get-Partition -DriveLetter $v.DriveLetter
+  if (-not $part) { continue }
+  $disk = Get-Disk -Number $part.DiskNumber
+  if (-not $disk) { continue }
+  $k = $disk.Number
+  if (-not $map[$k]) { $map[$k] = @{ disk=$disk; vols=@() } }
+  $map[$k].vols += (VolInfo $v)
 }
 
-if (-not $items) {
-  foreach ($disk in Get-Disk | Where-Object { $_.BusType -eq 'USB' }) {
-    $letters = @()
-    $label   = ''
+foreach($kv in $map.GetEnumerator()){
+  $items += Build $kv.Value.disk $kv.Value.vols
+}
+
+# Fallback: if none found above, try all USB disks and read any volumes on them
+if (-not $items){
+  foreach($disk in Get-Disk | Where-Object { $_.BusType -eq 'USB' }){
+    $vs = @()
     Get-Partition -DiskNumber $disk.Number | ForEach-Object {
       $v = Get-Volume -Partition $_
-      if ($v.DriveLetter) {
-        $letters += ($v.DriveLetter + ':')
-        if (-not $label) { $label = $v.FileSystemLabel }
-      }
+      if ($v) { $vs += (VolInfo $v) }
     }
-    $items += Build $disk $letters $label
+    if ($vs.Count -gt 0) { $items += Build $disk $vs }
   }
 }
 
-$items | ConvertTo-Json -Depth 6`.trim();
+$items | ConvertTo-Json -Depth 7
+`.trim();
 
   const enc = Buffer.from(ps, 'utf16le').toString('base64');
   const { stdout } =
@@ -352,7 +365,7 @@ $items | ConvertTo-Json -Depth 6`.trim();
   return Array.isArray(data) ? data : (data ? [data] : []);
 }
 
-// Look up a drive by device string or by drive letter
+// easy helper for renderer selection resolution
 async function resolveDrive({ device, mountpoints }) {
   const list = await listDrives();
   const letter = (mountpoints?.[0] || "").toUpperCase();
@@ -393,7 +406,7 @@ ipcMain.handle("format:execute", async (_e,p)=>{
   if (!(await isAdminSelf())) throw new Error("Administrator privileges are required.");
 
   dbg(`Formatting: ${plan.cmd} ${plan.args.join(" ")}`);
-  sendDbg(`Running: ${plan.cmd} ${plan.args.join(" ")}`);
+  sendDbgToRenderer(`Running: ${plan.cmd} ${plan.args.join(" ")}`);
 
   return new Promise((ok,er)=>{
     const ch = spawn(plan.cmd, plan.args, { shell:false });
@@ -424,108 +437,287 @@ ipcMain.handle("drive:eject", async (_e, letter) => {
     const L = String(letter || "").replace(":", "").toUpperCase();
     if (!/^[A-Z]$/.test(L)) throw new Error("Invalid drive letter");
 
-    // Try Shell "Eject" verb
-    const ps = `
-$ErrorActionPreference = 'SilentlyContinue'
-$L = '${L}:'
+    // Small helper to run PS with timeout and capture stdout as text.
+    const runPS = (ps, timeoutMs = 12000) =>
+      new Promise((resolve, reject) => {
+        const enc = Buffer.from(ps, "utf16le").toString("base64");
+        const ch = spawn(
+          "powershell.exe",
+          ["-NoProfile", "-ExecutionPolicy", "Bypass", "-EncodedCommand", enc],
+          { stdio: ["ignore", "pipe", "pipe"] }
+        );
+        let out = "", err = "";
+        const to = setTimeout(() => { try { ch.kill(); } catch {} ; reject(new Error("PowerShell timeout")); }, timeoutMs);
+        ch.stdout.on("data", d => (out += d.toString()));
+        ch.stderr.on("data", d => (err += d.toString()));
+        ch.on("error", reject);
+        ch.on("close", code => { clearTimeout(to); code === 0 ? resolve(out) : reject(new Error(err || `Exited ${code}`)); });
+      });
+
+    // Retry-aware mounted check to avoid WMI lag false-negatives
+    async function stillMountedWithRetry(letter, retries = 5, delayMs = 400) {
+      const checkCmd = `
+$ErrorActionPreference='SilentlyContinue'
+$v = Get-CimInstance -ClassName Win32_Volume -Filter "DriveLetter='${letter}:'"
+if ($v) { '1' } else { '0' }`.trim();
+
+      for (let i = 0; i < retries; i++) {
+        try {
+          const result = (await runPS(checkCmd, 4000)).trim();
+          if (result === "0") return false; // gone
+        } catch { /* ignore transient errors and retry */ }
+        await new Promise(r => setTimeout(r, delayMs));
+      }
+      return true; // still there after retries
+    }
+
+    // 0) Close Explorer windows targeting this drive (reduces “in use” errors)
+    try {
+      const closeExplorers = `
+$ErrorActionPreference='SilentlyContinue'
+$target = 'file:///${L}:/'.ToLower()
+$shell = New-Object -ComObject Shell.Application
+$wins = @($shell.Windows())
+foreach ($w in $wins) {
+  try {
+    $u = ($w.LocationURL + '')
+    if ($u.ToLower().StartsWith($target)) { $w.Quit() }
+  } catch {}
+}
+Start-Sleep -Milliseconds 250
+'OK'`.trim();
+      await runPS(closeExplorers, 4000);
+    } catch {}
+
+    // 1) Try shell eject (fast path)
+    const psShellEject = `
+$ErrorActionPreference='SilentlyContinue'
+$L='${L}:'
 $shell = New-Object -ComObject Shell.Application
 $ns = $shell.NameSpace(17)
 $item = $ns.ParseName($L)
-if ($item) {
-  $item.InvokeVerb('Eject')
-  Start-Sleep -Milliseconds 200
-  0
-} else {
-  1
-}`.trim();
+if ($item) { $item.InvokeVerb('Eject'); Start-Sleep -Milliseconds 400; 'OK' } else { 'MISS' }`.trim();
+    try { await runPS(psShellEject, 6000); } catch {}
 
-    const enc = Buffer.from(ps, "utf16le").toString("base64");
-    const { stdout } = await execAsync(`powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${enc}`);
-    const code = parseInt((stdout || "").trim(), 10);
-    if (Number.isFinite(code) && code === 0) return { ok: true };
+    // Give the OS a moment, then verify with retry (handles WMI lag)
+    await new Promise(r => setTimeout(r, 500));
+    if (!(await stillMountedWithRetry(L, 5, 400))) return { ok: true };
 
-    // Fallback: dismount volume (force)
-    const ps2 = `
+    // 2) Try PowerShell 5+ cmdlet (more graceful on newer Windows)
+    const psDismountVolume = `
+$ErrorActionPreference='SilentlyContinue'
+try {
+  if (Get-Command Dismount-Volume -ErrorAction SilentlyContinue) {
+    Dismount-Volume -DriveLetter ${L} -Force -Confirm:$false -ErrorAction SilentlyContinue | Out-Null
+    Start-Sleep -Milliseconds 300
+    'DONE'
+  } else {
+    'SKIP'
+  }
+} catch { 'ERR' }`.trim();
+    try { await runPS(psDismountVolume, 8000); } catch {}
+
+    await new Promise(r => setTimeout(r, 400));
+    if (!(await stillMountedWithRetry(L, 5, 400))) return { ok: true };
+
+    // 3) Final fallback: WMI dismount (force = true, permanent = false)
+    const psWmiDismount = `
+$ErrorActionPreference='SilentlyContinue'
 $vol = Get-CimInstance -ClassName Win32_Volume -Filter "DriveLetter='${L}:'"
 if ($vol) {
-  $null = $vol.Dismount($true, $true)
-  0
-} else {
-  1
-}`.trim();
+  $null = $vol.Dismount($true, $false)
+  Start-Sleep -Milliseconds 300
+  'DONE'
+} else { 'MISS' }`.trim();
+    await runPS(psWmiDismount, 8000);
 
-    const enc2 = Buffer.from(ps2, "utf16le").toString("base64");
-    const { stdout: s2 } = await execAsync(`powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${enc2}`);
-    const code2 = parseInt((s2 || "").trim(), 10);
-    if (Number.isFinite(code2) && code2 === 0) return { ok: true };
+    // Final verification with retry before declaring failure
+    if (await stillMountedWithRetry(L, 5, 400)) {
+      throw new Error("Windows refused to eject/dismount the volume. Close any apps or Explorer windows using the drive and try again.");
+    }
+    return { ok: true };
 
-    throw new Error("Windows refused to eject the volume.");
   } catch (e) {
     dbg(`drive:eject error: ${e.message}`);
     return { ok: false, error: e.message };
   }
 });
 
-// ────────────────────────────── WMI auto-refresh watcher
+
+// ────────────────────────────── device monitor (WMI + poll, debounced)
 let wmiProc = null;
+let pollTimer = null;
+let lastLetters = "";
+
+// Debounced emitter to the renderer
+let emitTimer = null;
+let pendingPayload = null;
+let lastEmitKey = "";
+
+function currentLettersKey(list) {
+  const letters = list.flatMap(d => d.mountpoints || []);
+  return letters.map(s => s.toUpperCase()).sort().join("|");
+}
+
+function emitDriveChange(reason, letters) {
+  // Coalesce bursts of events into a single UI update
+  pendingPayload = { reason, letters };
+  if (emitTimer) return;
+  emitTimer = setTimeout(() => {
+    emitTimer = null;
+    if (!pendingPayload) return;
+
+    const key = (pendingPayload.letters || [])
+      .map(s => s.toUpperCase())
+      .sort()
+      .join("|");
+
+    // Suppress duplicates unless it's an explicit add/remove
+    const forceReason = pendingPayload.reason?.startsWith("add") || pendingPayload.reason === "remove";
+    if (forceReason || key !== lastEmitKey) {
+      lastEmitKey = key;
+      try {
+        mainWindow?.webContents.send("drives:changed", pendingPayload);
+      } catch {}
+    }
+    pendingPayload = null;
+  }, 250);
+}
+
+function startPoller() {
+  if (pollTimer) return;
+  pollTimer = setInterval(async () => {
+    try {
+      const list = await listDrives();
+      const key  = currentLettersKey(list);
+      if (key !== lastLetters) {
+        const prevSet = new Set(lastLetters ? lastLetters.split("|").filter(Boolean) : []);
+        const nowSet  = new Set(key ? key.split("|").filter(Boolean) : []);
+        const added   = [...nowSet].filter(x => !prevSet.has(x));
+        const removed = [...prevSet].filter(x => !nowSet.has(x));
+        lastLetters = key;
+
+        const letters = list.flatMap(d => d.mountpoints || []);
+        if (added.length) {
+          emitDriveChange(`add:${added.join(",")}`, letters);
+        } else if (removed.length) {
+          emitDriveChange(`remove:${removed.join(",")}`, letters);
+        } else {
+          emitDriveChange("change", letters);
+        }
+      }
+    } catch (e) {
+      dbg(`poller error: ${e.message}`);
+    }
+  }, 2000);
+}
+
+function stopPoller() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
 
 function startWmiWatcher() {
-  if (process.platform !== "win32") return; // Windows-only
+  if (process.platform !== "win32") return;
   if (wmiProc) return;
 
-  try {
-    const ps = `
+  const script = `
 $ErrorActionPreference = 'SilentlyContinue'
-$q = "SELECT * FROM Win32_VolumeChangeEvent WHERE EventType=2 OR EventType=3 OR EventType=4"
-$w = New-Object System.Management.ManagementEventWatcher $q
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+
+# Listen to both classes; some systems only raise one reliably
+Register-WmiEvent -Class Win32_VolumeChangeEvent  -SourceIdentifier VolWatch | Out-Null
+Register-WmiEvent -Class Win32_DeviceChangeEvent  -SourceIdentifier DevWatch | Out-Null
+
 while ($true) {
-  try {
-    $e = $w.WaitForNextEvent()
-    if ($null -ne $e) {
-      [pscustomobject]@{ t = [int]$e.EventType; drive = $e.DriveName } | ConvertTo-Json -Compress
+  $e = Wait-Event -Timeout 3
+  if ($e) {
+    $src = $e.SourceIdentifier
+    $nev = $e.SourceEventArgs.NewEvent
+
+    $etype = 0
+    try { $etype = [int]$nev.EventType } catch {}
+
+    # Only forward arrival (2) / removal (3) — ignore noisy config changes
+    if ($etype -ne 2 -and $etype -ne 3) {
+      Remove-Event -EventIdentifier $e.EventIdentifier -ErrorAction SilentlyContinue
+      continue
     }
-  } catch { Start-Sleep -Milliseconds 200 }
+
+    $drv = ''
+    try { if ($nev.DriveName) { $drv = $nev.DriveName.Trim() } } catch {}
+
+    $obj = @{ source = $src; type = $etype; drive = $drv }
+    Write-Output ($obj | ConvertTo-Json -Compress)
+
+    # Remove exactly this event, don't flush the whole queue
+    Remove-Event -EventIdentifier $e.EventIdentifier -ErrorAction SilentlyContinue
+  }
 }
 `.trim();
 
-    const enc = Buffer.from(ps, "utf16le").toString("base64");
-    wmiProc = spawn("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-EncodedCommand", enc], {
-      stdio: ["ignore", "pipe", "pipe"],
-      windowsHide: true
-    });
+  const enc = Buffer.from(script, "utf16le").toString("base64");
+  wmiProc = spawn(
+    "powershell.exe",
+    ["-NoProfile", "-ExecutionPolicy", "Bypass", "-EncodedCommand", enc],
+    { stdio: ["ignore", "pipe", "pipe"] }
+  );
 
-    wmiProc.stdout.on("data", (buf) => {
-      const text = buf.toString().trim();
-      text.split(/\r?\n/).forEach((line) => {
-        if (!line) return;
-        const evt = jtry(line);
-        if (evt && (evt.t === 2 || evt.t === 3 || evt.t === 4)) {
-          mainWindow?.webContents.send("drives:changed", evt);
+  wmiProc.stdout.setEncoding("utf8");
+
+  // Line-buffered JSON parsing so partial chunks don't break us
+  let buf = "";
+  wmiProc.stdout.on("data", async (chunk) => {
+    buf += String(chunk);
+    let idx;
+    while ((idx = buf.indexOf("\n")) !== -1) {
+      const line = buf.slice(0, idx).trim();
+      buf = buf.slice(idx + 1);
+      if (!line) continue;
+
+      try {
+        const evt = JSON.parse(line);
+        dbg(`WMI evt: src=${evt.source} type=${evt.type} drive=${evt.drive || "-"}`);
+
+        const list = await listDrives();
+        const key  = currentLettersKey(list);
+        const letters = list.flatMap(d => d.mountpoints || []);
+        const addedRemoved = evt.type === 3 ? "remove" : "add"; // 2=Arrival, 3=Removal
+
+        lastLetters = key;
+        if (addedRemoved === "remove") {
+          emitDriveChange("remove", letters);
+        } else {
+          // If we know the drive letter, include it in the reason
+          const tag = (evt.drive || "").toUpperCase();
+          const reason = tag ? `add:${tag}` : "add";
+          emitDriveChange(reason, letters);
         }
-      });
-    });
+      } catch (e) {
+        dbg(`WMI parse error: ${e.message}`);
+      }
+    }
+  });
 
-    wmiProc.stderr.on("data", (buf) => {
-      dbg(`WMI watcher stderr: ${buf.toString().trim()}`);
-    });
-
-    wmiProc.on("exit", (code) => {
-      dbg(`WMI watcher exited (${code})`);
-      wmiProc = null;
-    });
-
-    dbg("WMI watcher started");
-  } catch (e) {
-    dbg("WMI watcher failed to start: " + e.message);
-  }
+  wmiProc.on("error", (e) => { dbg(`WMI watcher error: ${e.message}`); });
+  wmiProc.on("exit",  () => { dbg("WMI watcher exited"); wmiProc = null; });
 }
 
 function stopWmiWatcher() {
-  try {
-    if (wmiProc) {
-      wmiProc.kill();
-      wmiProc = null;
-      dbg("WMI watcher stopped");
-    }
-  } catch {}
+  try { wmiProc?.kill(); } catch {}
+  wmiProc = null;
 }
+
+ipcMain.handle("drives:watch/start", async () => {
+  const list = await listDrives();
+  lastLetters = currentLettersKey(list);
+  startWmiWatcher();
+  startPoller();
+  return { ok: true, letters: list.flatMap(d => d.mountpoints || []) };
+});
+
+ipcMain.handle("drives:watch/stop", () => {
+  stopWmiWatcher();
+  stopPoller();
+  return { ok: true };
+});
+

@@ -1,8 +1,9 @@
+
 <p align="center">
   <img src="https://i.imgur.com/5TUVJ3n.png" alt="Swift Formatter PRO logo" width="128" height="128">
 </p>
 
-<h1 align="center">Swift Formatter <em>PRO</em> v1.3.6</h1>
+<h1 align="center">Swift Formatter <em>PRO</em> v1.3.7</h1>
 
 <p align="center">
   Sleek, Windows-only USB drive formatter built with <strong>Electron 31</strong>, <strong>Bootswatch Darkly</strong>, and native <strong>PowerShell</strong>.
@@ -12,7 +13,7 @@
   <a href="https://www.electronjs.org/"><img src="https://img.shields.io/badge/Electron-31.x-2ea44f?logo=electron&logoColor=white" alt="Electron 31"></a>
   <a href="#"><img src="https://img.shields.io/badge/Windows-Only-0078D6?logo=windows&logoColor=white" alt="Windows only"></a>
   <a href="https://bootswatch.com/darkly/"><img src="https://img.shields.io/badge/Bootswatch-Darkly-7952B3?logo=bootstrap&logoColor=white" alt="Bootswatch Darkly"></a>
-  <a href="#"><img src="https://img.shields.io/badge/Version-v1.3.6-blue?logo=semver&logoColor=white" alt="Version v1.3.6"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Version-v1.3.7-blue?logo=semver&logoColor=white" alt="Version v1.3.7"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License"></a>
 </p>
 
@@ -20,7 +21,7 @@
 
 ## ✨ Overview
 **Swift Formatter PRO** is a modern USB drive formatting tool for Windows 10 / 11, designed for **speed, safety, and style**.  
-It features a custom title bar, live PowerShell output, instant device detection, and a built-in updater — all in a portable EXE.
+It features a custom title bar, live PowerShell output, instant device detection, detailed drive info cards, and a built-in updater — all in a portable EXE.
 
 ---
 
@@ -28,9 +29,17 @@ It features a custom title bar, live PowerShell output, instant device detection
 
 ### 🖥️ Modern UI
 - **Dark-mode design** powered by Bootswatch Darkly.
-- Glow-hover animations on drive tiles.
-- Compact drive list with device chips & volume labels.
+- Glow-hover animations on drive tiles (with border clipping fixed for rounded corners).
+- Compact drive list with device chips, volume labels, and detailed info cards.
 - Custom glass-style right-click menu with smooth hover effects.
+- Styled in-app release notes with headings, icons, and clean spacing.
+
+### 📊 Drive Details Card
+When you select a drive, you’ll see:
+- **Used space** and **free space** (with colored usage bar)
+- **File system type**
+- **Total capacity**
+- **Device path & letter**
 
 ### 🛡️ Safety Guards
 - Blocks formatting of:
@@ -43,10 +52,12 @@ It features a custom title bar, live PowerShell output, instant device detection
 
 ### ⚡ Performance & Workflow
 - **Native PowerShell `Format-Volume`** for reliable results.
-- **Real-time device updates** via WMI — no manual refresh required.
+- **Real-time device updates** via combined WMI events + polling.
+- **No auto-selection on startup** — prevents accidental formatting.
 - Command preview before execution.
 - Output log clears before each run but preserves past logs silently.
 - “Open in Explorer” and “Safely Eject” available from the context menu.
+- Eject reliability improvements — app confirms true unmount before reporting failure.
 - Drives disappear from the list immediately after eject.
 
 ### 🔄 Updates
@@ -60,7 +71,7 @@ It features a custom title bar, live PowerShell output, instant device detection
 
 <p align="center">
   <img src="https://i.imgur.com/z3X3Pu7.png" alt="Drive list panel" width="85%"><br>
-  <em>Polished drive list with glow-hover effects and volume labels.</em>
+  <em>Polished drive list with glow-hover effects, volume labels, and usage bars.</em>
 </p>
 
 <p align="center">
@@ -70,7 +81,7 @@ It features a custom title bar, live PowerShell output, instant device detection
 
 <p align="center">
   <img src="https://i.imgur.com/FB8EtXk.png" alt="Updater dialog" width="85%"><br>
-  <em>In-app updater with release notes and download progress.</em>
+  <em>In-app updater with styled release notes and download progress.</em>
 </p>
 
 ---
@@ -119,9 +130,9 @@ Dev mode starts maximised and shows **Standard** or **Admin** in the title bar.
 ```json
 {
   "name": "Swift Formatter PRO",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "channel": "stable",
-  "build": 7,
+  "build": 8,
   "releasedAt": "2025-08-09T00:00:00Z",
   "repo": "skillerious/SwiftFormatter",
   "tagPrefix": "v"

@@ -57,18 +57,19 @@ It features a custom title bar, live PowerShell output, instant device detection
 ---
 
 ## 📷 UI Preview
+
 <p align="center">
-  <img src="https://i.imgur.com/z3X3Pu7.png" alt="Drive list panel" width="85%">
+  <img src="https://i.imgur.com/z3X3Pu7.png" alt="Drive list panel" width="85%"><br>
   <em>Polished drive list with glow-hover effects and volume labels.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/lFbQ8By.png" alt="About dialog" width="85%">
+  <img src="https://i.imgur.com/lFbQ8By.png" alt="About dialog" width="85%"><br>
   <em>About dialog with build metadata and license info.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/FB8EtXk.png" alt="Updater dialog" width="85%">
+  <img src="https://i.imgur.com/FB8EtXk.png" alt="Updater dialog" width="85%"><br>
   <em>In-app updater with release notes and download progress.</em>
 </p>
 

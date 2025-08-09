@@ -1,13 +1,5 @@
-// ─────────────────────────────────────────────────────────────────────────────
-//  main.js — Swift Formatter PRO  (Windows-only · Electron main process)
-//  © 2025 Robin Doak   ·   MIT-licensed
-// ─────────────────────────────────────────────────────────────────────────────
-//
-//  ▸ Robust admin detection & self-elevation   (dev + packaged)
-//  ▸ Rolling debug log   (dev: project root  •  packaged: %APPDATA%)
-//  ▸ DPAPI helpers for encrypted GitHub token
-//  ▸ Updater, drive enumeration (with volumeLabel), formatter
-// ─────────────────────────────────────────────────────────────────────────────
+// main.js — Swift Formatter PRO  (Windows-only · Electron main process)
+// © 2025 Robin Doak · MIT
 
 "use strict";
 
@@ -44,6 +36,17 @@ function iconPath() {
 }
 const jtry = (s) => { try { return JSON.parse(s); } catch { return null; } };
 
+// PowerShell safe single-quoted string
+function psq(str) {
+  const s = (str ?? "").toString().slice(0, 32); // Volume labels: max 32 chars
+  return `'${s.replace(/'/g, "''")}'`;
+}
+// Allow only supported filesystems to reach PowerShell
+function sanitizeFs(fsType) {
+  const v = (fsType || "").toUpperCase();
+  return ["EXFAT", "FAT32", "NTFS"].includes(v) ? v : "EXFAT";
+}
+
 // ────────────────────────────── BrowserWindow
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -65,12 +68,16 @@ function createWindow() {
   mainWindow.once("ready-to-show", () => {
     mainWindow.maximize();
     mainWindow.show();
+    startWmiWatcher(); // ← start auto-refresh watcher when UI is visible
   });
 }
 
 app.whenReady().then(() => { dbg("App ready"); createWindow(); });
 app.on("activate", () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
-app.on("window-all-closed", () => { if (process.platform !== "darwin") app.quit(); });
+app.on("window-all-closed", () => { 
+  stopWmiWatcher();
+  if (process.platform !== "darwin") app.quit(); 
+});
 
 // ────────────────────────────── title-bar IPC plumbing
 ipcMain.on   ("window:minimize", () => mainWindow.minimize());
@@ -269,20 +276,17 @@ ipcMain.handle("update:install", async (_e,f)=>{
   }catch(e){ dbg(`update:install error: ${e.message}`); return { ok:false, error:e.message }; }
 });
 
-/* ────────────────────────────── drive enumeration (with volumeLabel) */
+// ────────────────────────────── drive enumeration (with volumeLabel)
 ipcMain.handle("drives:list", async () => {
   try { return await listDrives(); }
   catch (e) { sendDbg(`Error listing drives: ${e.message}`); return []; }
 });
 
 async function listDrives() {
-  /*  PowerShell – returns a JSON array of:
-        {
-          device, description, volumeLabel, size, isUSB,
-          isReadOnly, isSystem, isRemovable, busType, mountpoints[]
-        }
-      The earlier script had a stray space before “.FileSystemLabel”,
-      causing a parser error.  This version is syntactically correct.   */
+  /*  PowerShell – returns a JSON array:
+        { device, description, volumeLabel, size, isUSB, isReadOnly, isSystem,
+          isRemovable, busType, mountpoints[] }
+  */
   const ps = `
 $ErrorActionPreference = 'SilentlyContinue'
 
@@ -348,22 +352,40 @@ $items | ConvertTo-Json -Depth 6`.trim();
   return Array.isArray(data) ? data : (data ? [data] : []);
 }
 
+// Look up a drive by device string or by drive letter
+async function resolveDrive({ device, mountpoints }) {
+  const list = await listDrives();
+  const letter = (mountpoints?.[0] || "").toUpperCase();
+  let found = device ? list.find(d => d.device === device) : null;
+  if (!found && letter) {
+    found = list.find(d => (d.mountpoints||[]).map(x=>x.toUpperCase()).includes(letter));
+  }
+  return found || null;
+}
 
 // ────────────────────────────── formatter
-function formatCmd(letter,fs,label,full){
+function formatCmd(letter, fsType, label, full){
+  const fs = sanitizeFs(fsType);
+  const quotedLabel = psq(label);
   return {
     cmd :"powershell.exe",
     args:["-NoProfile","-ExecutionPolicy","Bypass","-Command",
       `Format-Volume -DriveLetter ${letter} ` +
       `-FileSystem ${fs} ` +
-      `-NewFileSystemLabel '${label||""}' ` +
+      `-NewFileSystemLabel ${quotedLabel} ` +
       `-Confirm:$false -Force -Full:${full?"$true":"$false"}`]
   };
 }
 
 ipcMain.handle("format:execute", async (_e,p)=>{
-  const letter = (p.mountpoints?.[0] || "").replace(":","");
+  const letter = (p.mountpoints?.[0] || "").replace(":","").toUpperCase();
   if (!letter) throw new Error("No drive letter");
+
+  const target = await resolveDrive({ device: p.device, mountpoints: p.mountpoints });
+  if (!target) throw new Error("Target drive not found");
+  if (!target.isUSB)     throw new Error("Refusing to format: target disk is not a USB device.");
+  if (target.isSystem)   throw new Error("Refusing to format: target disk is a system disk.");
+  if (target.isReadOnly) throw new Error("Refusing to format: target disk is read-only.");
 
   const plan = formatCmd(letter, p.fsType, p.label, !p.quick);
   if (p.simulate) return { simulated:true, plan };
@@ -381,3 +403,129 @@ ipcMain.handle("format:execute", async (_e,p)=>{
     ch.on("error", er);
   });
 });
+
+// ────────────────────────────── drive helpers (open, eject)
+ipcMain.handle("drive:open", async (_e, letter) => {
+  try {
+    const L = String(letter || "").replace(":", "").toUpperCase();
+    if (!/^[A-Z]$/.test(L)) throw new Error("Invalid drive letter");
+    const drivePath = `${L}:\\`;
+    const err = await shell.openPath(drivePath);
+    if (err) throw new Error(err);
+    return { ok: true };
+  } catch (e) {
+    dbg(`drive:open error: ${e.message}`);
+    return { ok: false, error: e.message };
+  }
+});
+
+ipcMain.handle("drive:eject", async (_e, letter) => {
+  try {
+    const L = String(letter || "").replace(":", "").toUpperCase();
+    if (!/^[A-Z]$/.test(L)) throw new Error("Invalid drive letter");
+
+    // Try Shell "Eject" verb
+    const ps = `
+$ErrorActionPreference = 'SilentlyContinue'
+$L = '${L}:'
+$shell = New-Object -ComObject Shell.Application
+$ns = $shell.NameSpace(17)
+$item = $ns.ParseName($L)
+if ($item) {
+  $item.InvokeVerb('Eject')
+  Start-Sleep -Milliseconds 200
+  0
+} else {
+  1
+}`.trim();
+
+    const enc = Buffer.from(ps, "utf16le").toString("base64");
+    const { stdout } = await execAsync(`powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${enc}`);
+    const code = parseInt((stdout || "").trim(), 10);
+    if (Number.isFinite(code) && code === 0) return { ok: true };
+
+    // Fallback: dismount volume (force)
+    const ps2 = `
+$vol = Get-CimInstance -ClassName Win32_Volume -Filter "DriveLetter='${L}:'"
+if ($vol) {
+  $null = $vol.Dismount($true, $true)
+  0
+} else {
+  1
+}`.trim();
+
+    const enc2 = Buffer.from(ps2, "utf16le").toString("base64");
+    const { stdout: s2 } = await execAsync(`powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${enc2}`);
+    const code2 = parseInt((s2 || "").trim(), 10);
+    if (Number.isFinite(code2) && code2 === 0) return { ok: true };
+
+    throw new Error("Windows refused to eject the volume.");
+  } catch (e) {
+    dbg(`drive:eject error: ${e.message}`);
+    return { ok: false, error: e.message };
+  }
+});
+
+// ────────────────────────────── WMI auto-refresh watcher
+let wmiProc = null;
+
+function startWmiWatcher() {
+  if (process.platform !== "win32") return; // Windows-only
+  if (wmiProc) return;
+
+  try {
+    const ps = `
+$ErrorActionPreference = 'SilentlyContinue'
+$q = "SELECT * FROM Win32_VolumeChangeEvent WHERE EventType=2 OR EventType=3 OR EventType=4"
+$w = New-Object System.Management.ManagementEventWatcher $q
+while ($true) {
+  try {
+    $e = $w.WaitForNextEvent()
+    if ($null -ne $e) {
+      [pscustomobject]@{ t = [int]$e.EventType; drive = $e.DriveName } | ConvertTo-Json -Compress
+    }
+  } catch { Start-Sleep -Milliseconds 200 }
+}
+`.trim();
+
+    const enc = Buffer.from(ps, "utf16le").toString("base64");
+    wmiProc = spawn("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-EncodedCommand", enc], {
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+
+    wmiProc.stdout.on("data", (buf) => {
+      const text = buf.toString().trim();
+      text.split(/\r?\n/).forEach((line) => {
+        if (!line) return;
+        const evt = jtry(line);
+        if (evt && (evt.t === 2 || evt.t === 3 || evt.t === 4)) {
+          mainWindow?.webContents.send("drives:changed", evt);
+        }
+      });
+    });
+
+    wmiProc.stderr.on("data", (buf) => {
+      dbg(`WMI watcher stderr: ${buf.toString().trim()}`);
+    });
+
+    wmiProc.on("exit", (code) => {
+      dbg(`WMI watcher exited (${code})`);
+      wmiProc = null;
+    });
+
+    dbg("WMI watcher started");
+  } catch (e) {
+    dbg("WMI watcher failed to start: " + e.message);
+  }
+}
+
+function stopWmiWatcher() {
+  try {
+    if (wmiProc) {
+      wmiProc.kill();
+      wmiProc = null;
+      dbg("WMI watcher stopped");
+    }
+  } catch {}
+}

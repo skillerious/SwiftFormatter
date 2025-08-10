@@ -12,7 +12,7 @@
   <a href="https://www.electronjs.org/"><img src="https://img.shields.io/badge/Electron-31.x-2ea44f?logo=electron&logoColor=white" alt="Electron 31"></a>
   <a href="#"><img src="https://img.shields.io/badge/Windows-Only-0078D6?logo=windows&logoColor=white" alt="Windows only"></a>
   <a href="https://bootswatch.com/darkly/"><img src="https://img.shields.io/badge/Bootswatch-Darkly-7952B3?logo=bootstrap&logoColor=white" alt="Bootswatch Darkly"></a>
-  <a href="#"><img src="https://img.shields.io/badge/Version-v1.3.7-blue?logo=semver&logoColor=white" alt="Version v1.3.7"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Version-v1.3.7-blue?logo=semver&logoColor=white" alt="Version v1.4.1"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License"></a>
 </p>
 

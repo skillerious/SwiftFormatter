@@ -18,7 +18,7 @@
 
 ---
 
-## ✨ What's New in v1.3.7
+## ✨ What's New in v1.4.1
 - **Reworked Role Badge**  
   - Now positioned to the left of the Update button.  
   - Dynamically switches between *Standard* (clickable to elevate) and *Admin* (informational).  

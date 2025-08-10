@@ -74,17 +74,17 @@
 ## 📷 UI Preview
 
 <p align="center">
-  <img src="https://i.imgur.com/m3LBolY.png" alt="Drive list panel" width="85%"><br>
+  <img src="https://i.imgur.com/Acmx3CL.png" alt="Drive list panel" width="85%"><br>
   <em>Polished drive list with glow-hover effects, volume labels, and usage bars.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/pItwqaK.png" alt="About dialog" width="85%"><br>
+  <img src="https://i.imgur.com/KHrQb9o.png" alt="About dialog" width="85%"><br>
   <em>About dialog with build metadata and license info.</em>
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/CKCr3vx.png" alt="Updater dialog" width="85%"><br>
+  <img src="https://i.imgur.com/UVtq9qf.png" alt="Updater dialog" width="85%"><br>
   <em>In-app updater with styled release notes and download progress.</em>
 </p>
 

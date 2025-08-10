@@ -1,5 +1,3 @@
-# Swift Formatter PRO v1.4.1
-
 <p align="center">
   <img src="https://i.imgur.com/5TUVJ3n.png" alt="Swift Formatter PRO logo" width="128" height="128">
 </p>

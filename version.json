@@ -1,9 +1,22 @@
 {
-  "name": "Swift Formatter PRO",
-  "version": "1.4.0",
-  "channel": "stable",
-  "build": 10000,
-  "releasedAt": "2025-08-09T00:00:00Z",
-  "repo": "skillerious/SwiftFormatter",
-  "tagPrefix": "v"
+  "schemaVersion": 2,
+  "generated": "2025-10-18T10:56:19Z",
+  "contact": "Skillerious — Robin Doak",
+  "apps": [
+    {
+      "id": "swiftformatter",
+      "name": "SwiftFormatter",
+      "tracks": {
+        "stable": {
+          "version": "2.4.8",
+          "code": 2048,
+          "date": "2025-10-18",
+          "url": "https://github.com/skillerious/SwiftFormatter/releases",
+          "download": "https://github.com/skillerious/SwiftFormatter/releases/latest",
+          "notes": "Professional USB drive formatter."
+        }
+      },
+      "history": []
+    }
+  ]
 }
